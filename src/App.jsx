@@ -3,9 +3,11 @@ import TitleBar from './components/TitleBar'
 import OutputPane from './components/OutputPane'
 import SuggestionChips from './components/SuggestionChips'
 import CommandLine from './components/CommandLine'
+import LoadingIntro from './components/LoadingIntro'
 import { executeCommand } from './utils/commandHandler'
 
 export default function App() {
+  const [showIntro, setShowIntro] = useState(true)
   const [items, setItems] = useState([])
   const [history, setHistory] = useState([])
   const outputRef = useRef(null)
@@ -19,6 +21,8 @@ export default function App() {
 
   // Boot sequence
   useEffect(() => {
+    if (showIntro) return
+
     let isCancelled = false
     let timeoutIds = []
 
@@ -73,7 +77,7 @@ export default function App() {
       isCancelled = true
       timeoutIds.forEach(id => clearTimeout(id))
     }
-  }, [])
+  }, [showIntro])
 
   const handleRunCommand = (raw) => {
     const trimmed = (raw || '').trim()
@@ -122,29 +126,33 @@ export default function App() {
       <div className="scanlines" aria-hidden="true" />
       <div className="vignette" aria-hidden="true" />
 
-      <div className="app" id="app">
-        <TitleBar
-          onClear={handleClearTerminal}
-          onFetch={handleReplayFetch}
-          onFocus={handleFocusInput}
-        />
+      {showIntro ? (
+        <LoadingIntro onComplete={() => setShowIntro(false)} />
+      ) : (
+        <div className="app" id="app">
+          <TitleBar
+            onClear={handleClearTerminal}
+            onFetch={handleReplayFetch}
+            onFocus={handleFocusInput}
+          />
 
-        <OutputPane
-          items={items}
-          onRunCommand={handleRunCommand}
-          outputRef={outputRef}
-          onFocusInput={handleFocusInput}
-        />
+          <OutputPane
+            items={items}
+            onRunCommand={handleRunCommand}
+            outputRef={outputRef}
+            onFocusInput={handleFocusInput}
+          />
 
-        <SuggestionChips onRunCommand={handleRunCommand} />
+          <SuggestionChips onRunCommand={handleRunCommand} />
 
-        <CommandLine
-          inputRef={inputRef}
-          history={history}
-          onRunCommand={handleRunCommand}
-          onAppendText={handleAppendText}
-        />
-      </div>
+          <CommandLine
+            inputRef={inputRef}
+            history={history}
+            onRunCommand={handleRunCommand}
+            onAppendText={handleAppendText}
+          />
+        </div>
+      )}
     </>
   )
 }

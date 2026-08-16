@@ -344,3 +344,136 @@ body.reduced-motion .app {
   body { font-size: 13px; }
   .fetch-art canvas { width: 170px; height: 190px; }
 }
+
+/* ---------------- loading intro ---------------- */
+.loading-intro {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  background: var(--bg);
+  z-index: 100;
+  transition: opacity 0.7s ease-in-out;
+  opacity: 1;
+  padding: 24px 16px;
+}
+
+.loading-intro.fading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Subtle scanline overlay inside the intro */
+.intro-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(199, 220, 255, 0.025) 0px,
+    rgba(199, 220, 255, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* Block-character ASCII "IdeaX" banner */
+.intro-banner {
+  font-family: var(--mono);
+  line-height: 1.25;
+  text-align: center;
+  /* glow */
+  filter: drop-shadow(0 0 18px rgba(37, 99, 255, 0.55));
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.banner-line {
+  color: var(--accent4);
+  font-size: clamp(7px, 1.4vw, 13px);
+  white-space: pre;
+  letter-spacing: 0.04em;
+}
+
+/* Add a subtle gradient so top rows are brighter */
+.banner-line:nth-child(1) { color: var(--accent3); }
+.banner-line:nth-child(2) { color: var(--accent3); }
+.banner-line:nth-child(3) { color: var(--accent4); }
+.banner-line:nth-child(4) { color: var(--accent5); }
+.banner-line:nth-child(5) { color: var(--accent5); }
+.banner-line:nth-child(6) { color: var(--text); opacity: 0.75; }
+
+/* Sub-title tagline */
+.intro-subtitle {
+  color: var(--dim);
+  font-size: 11.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+/* Scrolling boot log */
+.intro-log {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--faint);
+  width: 100%;
+  max-width: 540px;
+  min-height: 120px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.intro-log-line {
+  white-space: pre;
+  animation: logFadeIn 0.15s ease forwards;
+}
+
+.intro-log-line--last {
+  color: var(--accent4);
+}
+
+@keyframes logFadeIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Text-based progress row */
+.intro-progress-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  font-family: var(--mono);
+  font-size: 13px;
+  width: 100%;
+  max-width: 540px;
+}
+
+.intro-prompt {
+  color: var(--accent4);
+  white-space: nowrap;
+}
+
+.intro-progress-bar {
+  color: var(--accent5);
+  white-space: pre;
+  letter-spacing: 0.02em;
+}
+
+.cursor-blink {
+  color: var(--accent4);
+  animation: cursorBlink 1s step-end infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
