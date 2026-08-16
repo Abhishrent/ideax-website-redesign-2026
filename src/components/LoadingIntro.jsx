@@ -1,30 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
 
-// Big ASCII art for "IdeaX" – each line is one row of the banner
-const IDEAX_ASCII = [
-  ' ___     _             __  __',
-  '|_ _|   | |    ___    /  \\/  |',
-  ' | |  _ | |   / _ \\  | |\\/| |',
-  ' | | (_)| |__  __/ | | |  | |',
-  '|___|   |____\\___| |_|  |_|',
-]
-
-// A large hand-crafted ASCII "X" for the right side
-const X_ART = [
-  '\\\\          //',
-  ' \\\\        //',
-  '  \\\\      //',
-  '   \\\\    //',
-  '    \\\\  //',
-  '     \\\\// ',
-  '     //\\\\  ',
-  '    //  \\\\ ',
-  '   //    \\\\',
-  '  //      \\\\',
-  ' //        \\\\',
-  '//          \\\\',
-]
-
 // Full combined banner (large block letters)
 const BANNER_LINES = [
   '  ██╗██████╗ ███████╗ █████╗ ██╗  ██╗',
@@ -50,6 +25,7 @@ const BOOT_LOG = [
 const TOTAL_MS = 3400
 
 export default function LoadingIntro({ onComplete }) {
+  // phases: 'running' | 'flicker1' | 'dark1' | 'flicker2' | 'dark2' | 'flicker3' | 'done'
   const [phase, setPhase] = useState('running')
   const [logLines, setLogLines] = useState([])
   const [progress, setProgress] = useState(0)
@@ -73,25 +49,40 @@ export default function LoadingIntro({ onComplete }) {
 
     // Animate progress 0 → 100 over TOTAL_MS
     const steps = 60
-    const interval = TOTAL_MS / steps
+    const stepInterval = TOTAL_MS / steps
     let step = 0
     const pid = setInterval(() => {
       step++
-      // Ease-out curve
       const raw = step / steps
       const eased = 1 - Math.pow(1 - raw, 2)
       setProgress(Math.floor(eased * 100))
       if (step >= steps) clearInterval(pid)
-    }, interval)
+    }, stepInterval)
     timerRef.current.push(pid)
 
-    // Begin fade-out
-    const done = setTimeout(() => {
-      setPhase('fading')
-      const unmount = setTimeout(onComplete, 700)
-      timerRef.current.push(unmount)
-    }, TOTAL_MS + 100)
-    timerRef.current.push(done)
+    // CRT flicker sequence: intro → flicker pulses → hard cut
+    // Each "flicker" is a quick dim → bright → dim cycle
+    const seq = [
+      // [delay from TOTAL_MS+100, phase]
+      [0,   'flicker1'],  // first flash bright
+      [80,  'dark1'],     // drop to black
+      [160, 'flicker2'],  // second flash
+      [240, 'dark2'],     // drop again
+      [320, 'flicker3'],  // final burst
+      [400, 'done'],      // hard cut — unmount
+    ]
+
+    seq.forEach(([offset, p]) => {
+      const id = setTimeout(() => {
+        setPhase(p)
+        if (p === 'done') {
+          // Add boot class so terminal CRT animation fires on mount
+          document.body.classList.add('boot')
+          onComplete()
+        }
+      }, TOTAL_MS + 100 + offset)
+      timerRef.current.push(id)
+    })
 
     return () => timerRef.current.forEach(id => clearTimeout(id))
   }, [onComplete])
@@ -100,10 +91,10 @@ export default function LoadingIntro({ onComplete }) {
   const BAR_WIDTH = 28
   const filled = Math.round((progress / 100) * BAR_WIDTH)
   const empty = BAR_WIDTH - filled
-  const progressBar = `[${'\u2588'.repeat(filled)}${'\u2591'.repeat(empty)}] ${String(progress).padStart(3)}%`
+  const progressBar = `[${'█'.repeat(filled)}${'░'.repeat(empty)}] ${String(progress).padStart(3)}%`
 
   return (
-    <div className={`loading-intro ${phase}`} aria-label="Loading IdeaX">
+    <div className={`loading-intro loading-intro--${phase}`} aria-label="Loading IdeaX">
       {/* Scanlines overlay within intro */}
       <div className="intro-scanlines" aria-hidden="true" />
 

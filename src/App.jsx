@@ -33,11 +33,10 @@ export default function App() {
       document.body.classList.add('reduced-motion')
     }
 
+    // Remove boot class after the CRT flicker animation completes (~900ms)
     const bootTimer = setTimeout(() => {
-      if (!isCancelled) {
-        document.body.classList.remove('boot')
-      }
-    }, 1000)
+      if (!isCancelled) document.body.classList.remove('boot')
+    }, 950)
     timeoutIds.push(bootTimer)
 
     const bootLines = [

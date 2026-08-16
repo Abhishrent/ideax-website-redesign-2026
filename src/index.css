@@ -356,14 +356,61 @@ body.reduced-motion .app {
   gap: 0;
   background: var(--bg);
   z-index: 100;
-  transition: opacity 0.7s ease-in-out;
   opacity: 1;
   padding: 24px 16px;
+  /* no transition by default — flicker is animation-driven */
 }
 
-.loading-intro.fading {
+/* Phase: running — fully visible, no transition */
+.loading-intro--running {}
+
+/* Phase: flicker1 — bright white flash */
+.loading-intro--flicker1 {
+  animation: crtFlash1 0.08s steps(1, end) forwards;
+}
+
+/* Phase: dark1 — screen goes black */
+.loading-intro--dark1 {
+  opacity: 0;
+}
+
+/* Phase: flicker2 — second brief flash */
+.loading-intro--flicker2 {
+  animation: crtFlash2 0.07s steps(1, end) forwards;
+}
+
+/* Phase: dark2 — black again */
+.loading-intro--dark2 {
+  opacity: 0;
+}
+
+/* Phase: flicker3 — final bright burst before cut */
+.loading-intro--flicker3 {
+  animation: crtFlash3 0.06s steps(1, end) forwards;
+}
+
+/* Phase: done — invisible, about to unmount */
+.loading-intro--done {
   opacity: 0;
   pointer-events: none;
+}
+
+@keyframes crtFlash1 {
+  0%   { opacity: 1;    filter: brightness(2.5) blur(1px); }
+  40%  { opacity: 0.08; filter: brightness(0.1); }
+  100% { opacity: 0.08; filter: brightness(0.1); }
+}
+
+@keyframes crtFlash2 {
+  0%   { opacity: 1;    filter: brightness(3) blur(2px); }
+  50%  { opacity: 0.05; filter: brightness(0.05); }
+  100% { opacity: 0.05; filter: brightness(0.05); }
+}
+
+@keyframes crtFlash3 {
+  0%   { opacity: 1;    filter: brightness(4) blur(3px); }
+  60%  { opacity: 0;    filter: brightness(0); }
+  100% { opacity: 0;    filter: brightness(0); }
 }
 
 /* Subtle scanline overlay inside the intro */
