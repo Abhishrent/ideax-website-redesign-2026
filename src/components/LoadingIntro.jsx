@@ -11,10 +11,10 @@ const BANNER_LINES = [
 ]
 
 const BOOT_LOG = [
-  { t: 0,    text: '[    0.000] Booting MBMC IdeaX 2026 kernel...' },
-  { t: 300,  text: '[    0.312] mounting /proc and /sys filesystems' },
-  { t: 620,  text: '[    0.624] loading hackathon modules... OK' },
-  { t: 940,  text: '[    0.936] starting register.service... OK' },
+  { t: 0, text: '[    0.000] Booting MBMC IdeaX 2026 kernel...' },
+  { t: 300, text: '[    0.312] mounting /proc and /sys filesystems' },
+  { t: 620, text: '[    0.624] loading hackathon modules... OK' },
+  { t: 940, text: '[    0.936] starting register.service... OK' },
   { t: 1260, text: '[    1.260] mounting /tracks... OK' },
   { t: 1580, text: '[    1.581] mounting /prizes... OK' },
   { t: 1900, text: '[    1.901] loading ui renderer... OK' },
@@ -64,8 +64,8 @@ export default function LoadingIntro({ onComplete }) {
     // Each "flicker" is a quick dim → bright → dim cycle
     const seq = [
       // [delay from TOTAL_MS+100, phase]
-      [0,   'flicker1'],  // first flash bright
-      [80,  'dark1'],     // drop to black
+      [0, 'flicker1'],  // first flash bright
+      [80, 'dark1'],     // drop to black
       [160, 'flicker2'],  // second flash
       [240, 'dark2'],     // drop again
       [320, 'flicker3'],  // final burst
@@ -117,7 +117,7 @@ export default function LoadingIntro({ onComplete }) {
 
       {/* Sub-title */}
       <div className="intro-subtitle">
-        MBMC International Technology Hackathon &mdash; 2026
+        MBMC IdeaX 2026
       </div>
 
       {/* Scrolling boot log */}

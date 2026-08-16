@@ -361,8 +361,6 @@ body.reduced-motion .app {
   /* no transition by default — flicker is animation-driven */
 }
 
-/* Phase: running — fully visible, no transition */
-.loading-intro--running {}
 
 /* Phase: flicker1 — bright white flash */
 .loading-intro--flicker1 {
