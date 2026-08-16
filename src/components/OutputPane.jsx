@@ -208,13 +208,13 @@ export default function OutputPane({ items, onRunCommand, outputRef, onFocusInpu
             <div className="card">
               <h3>grand-winner.md</h3>
               <p>
-                <span className="strong" style={{ fontSize: '1.15em' }}>Rs. 50,000 (50k)</span> awarded to the overall grand winner.
+                <span className="strong" style={{ fontSize: '1.15em' }}>Rs. 50,000</span> awarded to the overall grand winner.
               </p>
             </div>
             <div className="card">
               <h3>per-track.md</h3>
               <p>
-                <span className="strong" style={{ fontSize: '1.15em' }}>Rs. 10,000 (10k)</span> awarded to each track winner (5 tracks).
+                <span className="strong" style={{ fontSize: '1.15em' }}>Rs. 10,000</span> awarded to each track winner (5 tracks).
               </p>
             </div>
             <div className="card">

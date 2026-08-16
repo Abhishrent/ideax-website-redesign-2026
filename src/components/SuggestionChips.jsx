@@ -7,8 +7,8 @@ export default function SuggestionChips({ onRunCommand }) {
     { label: '$ timeline', cmd: 'timeline' },
     { label: '$ prizes', cmd: 'prizes' },
     { label: '$ countdown', cmd: 'countdown' },
-    { label: '$ register', cmd: 'register' },
-    { label: '$ discord', cmd: 'discord' }
+    { label: '$ discord', cmd: 'discord' },
+    { label: '$ register', cmd: 'register' }
   ]
 
   return (
