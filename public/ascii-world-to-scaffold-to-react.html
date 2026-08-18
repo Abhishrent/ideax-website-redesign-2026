@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IdeaX — Hall of Fame</title>
+<style>
+  :root{
+    --bg:      #0d0f14;
+    --dim:     #4a4a5c;
+    --mid:     #9a97ae;
+    --bright:  #e8e2f5;
+    --amber:   #d9a544;
+    --red:     #b3382b;
+    --font: 'JetBrains Mono', 'Fira Code', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{
+    width:100%; height:100%; background:var(--bg); overflow:hidden;
+    font-family:var(--font); color:var(--mid);
+  }
+  #stage{
+    position:relative; width:100vw; height:100vh;
+    display:flex; align-items:center; justify-content:center;
+  }
+  canvas{
+    image-rendering:pixelated;
+    display:block;
+  }
+  #crt{
+    position:absolute; inset:0; pointer-events:none;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.0) 0px,
+        rgba(0,0,0,0.08) 1px,
+        rgba(0,0,0,0.0) 2px
+      );
+    mix-blend-mode:multiply;
+  }
+  #vignette{
+    position:absolute; inset:0; pointer-events:none;
+    background: radial-gradient(ellipse at center, rgba(13,15,20,0) 45%, rgba(6,7,10,0.78) 100%);
+  }
+  #hud{
+    position:absolute; inset:0; pointer-events:none;
+    font-size:12px; letter-spacing:0.5px; color:var(--bright);
+    text-shadow:0 0 6px rgba(232,226,245,0.4);
+  }
+  #hud .corner{ position:absolute; padding:14px 16px; line-height:1.6; white-space:pre; }
+  #hud .tl{ top:0; left:0; }
+  #hud .tr{ top:0; right:0; text-align:right; }
+  #hud .bl{ bottom:0; left:0; }
+  #hud .br{ bottom:0; right:0; text-align:right; }
+  #hud .label{ color:var(--bright); font-weight:600; }
+  #hud .logo{ color:var(--amber); font-size:11px; line-height:1.35; letter-spacing:0; text-shadow:0 0 8px rgba(217,165,68,0.55); }
+  #crosshair{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    color:var(--amber); font-size:14px; text-shadow:0 0 6px rgba(217,165,68,0.8);
+  }
+  #minimap{ image-rendering:pixelated; border:1px solid var(--dim); }
+
+  #overlay{
+    position:absolute; inset:0; z-index:5;
+    background:rgba(13,15,20,0.94);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap:18px; cursor:pointer;
+  }
+  #overlay h1{
+    color:var(--bright); font-size:28px; letter-spacing:5px;
+    text-shadow:0 0 16px rgba(217,165,68,0.5);
+  }
+  #overlay p{ color:var(--mid); font-size:13px; max-width:560px; line-height:1.8; }
+  #overlay .key{ color:var(--amber); }
+  #overlay .blink{ animation:blink 1.2s steps(2) infinite; color:var(--dim); font-size:12px; margin-top:8px; }
+  @keyframes blink{ 50%{ opacity:0; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="view"></canvas>
+  <div id="crt"></div>
+  <div id="vignette"></div>
+  <div id="crosshair">+</div>
+  <div id="hud">
+    <div class="corner tl">
+      <pre class="logo">█ █▀▄ █▀▀ ▄▀█ ▀▄▀
+█ █▄▀ ██▄ █▀█ █ █</pre>
+    </div>
+    <div class="corner tr" id="hud-tr"></div>
+    <div class="corner bl" id="hud-bl"></div>
+    <div class="corner br"><canvas id="minimap" width="120" height="120"></canvas></div>
+  </div>
+  <div id="overlay">
+    <h1>IdeaX welcomes you to its hall of fame</h1>
+    <p>
+      A gallery of sponsors, kept within a torch-lit stone keep, rendered entirely in text density.<br>
+      <span class="key">W A S D</span> to walk &nbsp;·&nbsp; mouse to look freely, any direction &nbsp;·&nbsp;
+      <span class="key">SHIFT</span> to hurry &nbsp;·&nbsp; <span class="key">M</span> for the full map &nbsp;·&nbsp; <span class="key">ESC</span> to release cursor
+    </p>
+    <div class="blink">[ click to step inside ]</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* =========================================================
+     1. THE BUILDING
+     Grid values:
+       0 = floor
+       1 = plain stone wall
+       2 = a hung painting (sponsor)
+       3 = fluted column / pillar
+       4 = stained-glass window
+       5 = torch sconce (a light source)
+       6 = woven tapestry
+     A castle floor plan built with carve() for rooms and
+     wallDeco()/pillar() for everything mounted on or standing
+     in them — easier to reshape wings or add sponsors later
+     than a hand-typed ASCII grid.
+  ========================================================= */
+  function buildMuseum() {
+    const W = 32, H = 26;
+    const grid = Array.from({ length: H }, () => new Array(W).fill(1));
+    const DEFAULT_HEIGHT = 3.2;
+    // ceiling height, in world units, per grid cell — stamped onto a
+    // room's floor plus a 1-cell border of its walls at carve time, so
+    // a raycast hitting a wall can look up how tall *that* wall is.
+    const heightGrid = Array.from({ length: H }, () => new Array(W).fill(DEFAULT_HEIGHT));
+    const carve = (x0, y0, x1, y1, wallH = DEFAULT_HEIGHT) => {
+      for (let y = y0 - 1; y <= y1 + 1; y++) {
+        for (let x = x0 - 1; x <= x1 + 1; x++) {
+          if (y >= 0 && y < H && x >= 0 && x < W) heightGrid[y][x] = wallH;
+        }
+      }
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) grid[y][x] = 0;
+    };
+
+    const paintings = [];
+    const torches = [];
+
+    // wall-mounted feature: painting, window, torch, tapestry, or a
+    // wall-flush column — always placed on a cell that is still a
+    // plain wall (never overwrites floor, never overwrites another
+    // feature), so the wing it's built against stays load-bearing.
+    const wallDeco = (x, y, code, extra) => {
+      grid[y][x] = code;
+      if (code === 2 && extra) paintings.push({ x, y, tier: extra.tier, name: extra.name });
+      if (code === 5) torches.push({ x: x + 0.5, y: y + 0.5 });
+    };
+    // free-standing pillar carved out of an open floor cell —
+    // walkable space remains all around it.
+    const pillar = (x, y) => { grid[y][x] = 3; };
+
+    /* ---- rooms — each carve() takes a ceiling height in world
+       units, so the halls soar in proportion to how grand they are ---- */
+    carve(2, 11, 10, 14, 4.2);   // Entrance Foyer — a modest vestibule
+    carve(11, 12, 13, 13, 4.2);  // corridor: foyer -> great hall
+    carve(14, 7, 25, 17, 13.5);  // Great Hall — the soaring, star-vaulted nave (Oxford-hall scale)
+    carve(19, 6, 20, 6, 5.0);    // corridor: great hall -> platinum wing
+    carve(7, 1, 28, 5, 9.5);     // Platinum Wing — a tall processional gallery
+    carve(26, 12, 26, 13, 4.4);  // corridor: great hall -> gold hall
+    carve(27, 9, 30, 16, 7.0);   // Gold Hall
+    carve(19, 18, 20, 18, 4.2);  // corridor: great hall -> silver hall
+    carve(2, 19, 29, 22, 6.5);   // Silver Hall
+
+    /* ---- Platinum Wing: a long gallery under a row of arched
+       windows, columns marking off each bay ---- */
+    const platItems = [
+      [9, 'col'], [11, 'win'], [13, 'plat:NORTHWIND'], [15, 'col'], [17, 'win'],
+      [19, 'plat:VERTEX'], [21, 'col'], [23, 'win'], [25, 'plat:ARCLIGHT'], [27, 'col'],
+    ];
+    for (const [cx, kind] of platItems) {
+      if (kind === 'col') wallDeco(cx, 0, 3);
+      else if (kind === 'win') wallDeco(cx, 0, 4);
+      else { const [, name] = kind.split(':'); wallDeco(cx, 0, 2, { tier: 'platinum', name }); }
+    }
+    wallDeco(6, 3, 5);
+    wallDeco(29, 3, 5);
+
+    /* ---- Great Hall: a hypostyle nave — a ring of pillars
+       around an open centre, torches at every wall segment ---- */
+    for (const [x, y] of [[15, 8], [24, 8], [15, 16], [24, 16], [17, 9], [22, 9], [17, 15], [22, 15]]) {
+      pillar(x, y);
+    }
+    wallDeco(13, 8, 5);  wallDeco(13, 16, 5);
+    wallDeco(26, 8, 5);  wallDeco(26, 16, 5);
+    wallDeco(15, 6, 5);  wallDeco(24, 6, 5);
+    wallDeco(15, 18, 5); wallDeco(24, 18, 5);
+
+    /* ---- Gold Hall: a narrow side gallery ---- */
+    wallDeco(31, 10, 2, { tier: 'gold', name: 'CASCADE' });
+    wallDeco(31, 12, 2, { tier: 'gold', name: 'ORBIT' });
+    wallDeco(31, 15, 2, { tier: 'gold', name: 'HALIFAX' });
+    wallDeco(28, 8, 5);
+    wallDeco(28, 17, 5);
+
+    /* ---- Silver Hall: the long south gallery, sponsors
+       alternating with tapestries ---- */
+    const silverItems = [
+      [4, 'PIVOT'], [7, null], [10, 'LUMEN'], [13, null], [16, 'ANCHOR'],
+      [19, null], [22, 'RAVEN'], [25, null], [28, 'CORVUS'],
+    ];
+    for (const [cx, name] of silverItems) {
+      if (name) wallDeco(cx, 23, 2, { tier: 'silver', name });
+      else wallDeco(cx, 23, 6);
+    }
+    wallDeco(1, 20, 5);
+    wallDeco(30, 21, 5);
+
+    /* ---- Entrance Foyer: columned porch, torches either side
+       of the inner doorway ---- */
+    wallDeco(4, 10, 3); wallDeco(8, 10, 3);
+    wallDeco(4, 15, 3); wallDeco(8, 15, 3);
+    wallDeco(11, 11, 5); wallDeco(11, 14, 5);
+
+    /* ---- free-standing set pieces: statues, the centrepiece
+       display, and hanging chandeliers. Not part of the grid —
+       these are billboard sprites projected at render time. ---- */
+    const sprites = [
+      { type: 'pedestal',   x: 19.5, y: 12.0 },
+      // Great Hall: a grand centrepiece chandelier, flanked by two
+      // smaller ones, all hanging from the star-vaulted ceiling.
+      { type: 'chandelier', x: 19.5, y: 12.0, scale: 2.4 },
+      { type: 'chandelier', x: 16.0, y: 9.0,  scale: 1.5 },
+      { type: 'chandelier', x: 23.0, y: 15.0, scale: 1.5 },
+      // Platinum Wing: a processional row of chandeliers overhead
+      { type: 'chandelier', x: 13.0, y: 3.0, scale: 1.7 },
+      { type: 'chandelier', x: 19.5, y: 3.0, scale: 1.7 },
+      { type: 'chandelier', x: 25.0, y: 3.0, scale: 1.7 },
+      // Gold Hall and Silver Hall get their own, more modest fixtures
+      { type: 'chandelier', x: 28.5, y: 12.5, scale: 1.3 },
+      { type: 'chandelier', x: 9.5,  y: 20.5, scale: 1.3 },
+      { type: 'chandelier', x: 21.5, y: 20.5, scale: 1.3 },
+    ];
+
+    return { grid, heightGrid, W, H, paintings, torches, sprites, spawn: { x: 4.0, y: 12.5 } };
+  }
+
+  const ROOMS = [
+    { name: "ENTRANCE HALL", x0: 2,  y0: 11, x1: 10, y1: 14 },
+    { name: "GREAT HALL",    x0: 14, y0: 7,  x1: 25, y1: 17 },
+    { name: "PLATINUM WING", x0: 7,  y0: 1,  x1: 28, y1: 5  },
+    { name: "GOLD HALL",     x0: 27, y0: 9,  x1: 30, y1: 16 },
+    { name: "SILVER HALL",   x0: 2,  y0: 19, x1: 29, y1: 22 },
+  ];
+  function currentRoom() {
+    for (const r of ROOMS) {
+      if (player.x >= r.x0 && player.x <= r.x1 + 1 && player.y >= r.y0 && player.y <= r.y1 + 1) return r.name;
+    }
+    return "CORRIDOR";
+  }
+
+  const museum = buildMuseum();
+  const PAINTING_LOOKUP = {};
+  museum.paintings.forEach(p => { PAINTING_LOOKUP[`${p.x},${p.y}`] = p; });
+
+  // deterministic pseudo-random phase per torch, so each one
+  // flickers on its own rhythm instead of in lockstep.
+  const TORCHES = museum.torches.map(t => {
+    const h = Math.sin(t.x * 12.9898 + t.y * 78.233) * 43758.5453;
+    return { x: t.x, y: t.y, phase: (h - Math.floor(h)) * Math.PI * 2 };
+  });
+  function torchFlicker(t, timeSec) {
+    return 0.78 + 0.14 * Math.sin(timeSec * 6.1 + t.phase) + 0.08 * Math.sin(timeSec * 13.3 + t.phase * 1.7);
+  }
+  // ambient warm-light contribution at a world point, summed
+  // from every torch within reach (cheap: torch count is small).
+  function torchGlow(wx, wy, timeSec) {
+    let g = 0;
+    for (const t of TORCHES) {
+      const dx = wx - t.x, dy = wy - t.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 > 20) continue;
+      const d = Math.sqrt(d2);
+      const falloff = Math.max(0, 1 - d / 4.4);
+      g += falloff * falloff * torchFlicker(t, timeSec);
+    }
+    return Math.min(1, g);
+  }
+  function nearestTorchDist(wx, wy) {
+    let best = Infinity;
+    for (const t of TORCHES) {
+      const dx = wx - t.x, dy = wy - t.y;
+      const d = Math.hypot(dx, dy);
+      if (d < best) best = d;
+    }
+    return best;
+  }
+
+  function isWall(x, y) {
+    const mx = Math.floor(x), my = Math.floor(y);
+    if (mx < 0 || my < 0 || mx >= museum.W || my >= museum.H) return true;
+    return museum.grid[my][mx] !== 0;
+  }
+  function isSpriteBlocked(x, y) {
+    for (const s of museum.sprites) {
+      if (!s.collide) continue;
+      const dx = x - s.x, dy = y - s.y;
+      if (dx * dx + dy * dy < s.radius * s.radius) return true;
+    }
+    return false;
+  }
+
+  /* =========================================================
+     2. TIER SIZING — this is the actual "sponsor size" rule.
+     A painting always lives on a single 1-unit wall face; its
+     tier controls what fraction of that face the frame covers.
+  ========================================================= */
+  const TIERS = {
+    platinum: { wFrac: 0.88, hFrac: 0.82, maxLen: 10, frame: [222, 222, 230], canvasA: [200, 210, 235], canvasB: [90, 100, 150] },
+    gold:     { wFrac: 0.62, hFrac: 0.56, maxLen: 7,  frame: [199, 158, 66],  canvasA: [230, 180, 90],  canvasB: [120, 60, 20]  },
+    silver:   { wFrac: 0.40, hFrac: 0.36, maxLen: 6,  frame: [178, 178, 188], canvasA: [180, 190, 205], canvasB: [70, 80, 100]  },
+  };
+
+  const WALL_COLOR    = [132, 130, 146];   // cut stone
+  const MORTAR_COLOR  = [64, 62, 74];
+  const COLUMN_COLOR  = [206, 196, 168];   // pale marble
+  const COLUMN_SHADOW = [92, 86, 72];
+  const CEIL_COLOR    = [104, 102, 120];   // vaulted stone
+  const FLOOR_COLOR_A = [94, 90, 84];      // flagstone
+  const FLOOR_COLOR_B = [72, 69, 64];
+  const PLAQUE_INK    = [244, 214, 150];
+  const PLAQUE_BG     = [34, 26, 18];
+  const TORCH_FLAME_A = [255, 224, 140];
+  const TORCH_FLAME_B = [214, 90, 34];
+  const GLASS_COLORS  = [[80, 100, 200], [140, 80, 195], [214, 168, 70]];
+
+  function lerpColor(a, b, t) {
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  }
+  function lerpColor3(stops, t) {
+    t = Math.max(0, Math.min(0.9999, t));
+    const seg = t * (stops.length - 1);
+    const i = Math.floor(seg);
+    return lerpColor(stops[i], stops[i + 1], seg - i);
+  }
+  function shade(rgb, t) {
+    t = Math.max(0, Math.min(1, t));
+    const r = Math.round(rgb[0] * t), g = Math.round(rgb[1] * t), b = Math.round(rgb[2] * t);
+    return `rgba(${r},${g},${b},${(0.25 + t * 0.75).toFixed(3)})`;
+  }
+
+  /* =========================================================
+     3. A TINY 5x7 BITMAP FONT
+     Used to stamp sponsor names onto the plaque strip of each
+     painting — this is real texture-mapped text, sampled the
+     same way the abstract canvas art is sampled.
+  ========================================================= */
+  const FONT = {
+    A:["01110","10001","10001","11111","10001","10001","10001"],
+    B:["11110","10001","10001","11110","10001","10001","11110"],
+    C:["01111","10000","10000","10000","10000","10000","01111"],
+    D:["11110","10001","10001","10001","10001","10001","11110"],
+    E:["11111","10000","10000","11110","10000","10000","11111"],
+    F:["11111","10000","10000","11110","10000","10000","10000"],
+    G:["01111","10000","10000","10011","10001","10001","01111"],
+    H:["10001","10001","10001","11111","10001","10001","10001"],
+    I:["01110","00100","00100","00100","00100","00100","01110"],
+    J:["00111","00010","00010","00010","00010","10010","01100"],
+    K:["10001","10010","10100","11000","10100","10010","10001"],
+    L:["10000","10000","10000","10000","10000","10000","11111"],
+    M:["10001","11011","10101","10101","10001","10001","10001"],
+    N:["10001","11001","10101","10101","10011","10001","10001"],
+    O:["01110","10001","10001","10001","10001","10001","01110"],
+    P:["11110","10001","10001","11110","10000","10000","10000"],
+    Q:["01110","10001","10001","10001","10101","10010","01101"],
+    R:["11110","10001","10001","11110","10100","10010","10001"],
+    S:["01111","10000","10000","01110","00001","00001","11110"],
+    T:["11111","00100","00100","00100","00100","00100","00100"],
+    U:["10001","10001","10001","10001","10001","10001","01110"],
+    V:["10001","10001","10001","10001","10001","01010","00100"],
+    W:["10001","10001","10001","10101","10101","10101","01010"],
+    X:["10001","10001","01010","00100","01010","10001","10001"],
+    Y:["10001","10001","01010","00100","00100","00100","00100"],
+    Z:["11111","00001","00010","00100","01000","10000","11111"],
+    " ":["00000","00000","00000","00000","00000","00000","00000"],
+  };
+  function glyphAt(ch, col, row) {
+    const g = FONT[ch] || FONT[" "];
+    if (row < 0 || row > 6 || col < 0 || col > 4) return 0;
+    return g[row][col] === "1" ? 1 : 0;
+  }
+
+  /* =========================================================
+     4. CANVAS / CHARACTER GRID
+  ========================================================= */
+  const canvas = document.getElementById("view");
+  const ctx = canvas.getContext("2d");
+
+  // fullscreen: the character grid is sized to fill the actual viewport
+  // (in character cells), not a fixed boxed frame — so COLS/ROWS, the
+  // z-buffer, and the pitch limit are all recomputed on every resize.
+  const CHAR_W = 8, CHAR_H = 14;
+  let COLS, ROWS, PITCH_LIMIT, zbuffer;
+  function resize() {
+    COLS = Math.max(70, Math.floor(window.innerWidth / CHAR_W));
+    ROWS = Math.max(34, Math.floor(window.innerHeight / CHAR_H));
+    canvas.width = COLS * CHAR_W;
+    canvas.height = ROWS * CHAR_H;
+    ctx.font = `${CHAR_H - 2}px 'JetBrains Mono', ui-monospace, monospace`;
+    ctx.textBaseline = "top";
+    PITCH_LIMIT = ROWS * 0.62;
+    zbuffer = new Float32Array(COLS);
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  const FOV = Math.PI / 3;
+  const HALF_FOV = FOV / 2;
+  const MAX_DEPTH = 40;
+  // eye height above the floor, in world units — kept low relative to
+  // the tall halls' ceiling heights so the horizon sits close to the
+  // floor and almost the whole wall height rises *above* it. That's
+  // what makes a soaring hall feel like it towers over the character,
+  // the way a real great hall dwarfs the person standing in it.
+  const EYE_HEIGHT = 1.7;
+
+  const WALL_RAMP  = " .:-=+*#%@";
+  const FLOOR_RAMP = " .,:;+*#";
+  const CEIL_RAMP  = "  .`'";
+
+  function rampChar(ramp, t) {
+    const i = Math.max(0, Math.min(ramp.length - 1, Math.floor(t * (ramp.length - 1))));
+    return ramp[i];
+  }
+
+  /* =========================================================
+     5. PLAYER + INPUT
+     Yaw comes from mouse-X exactly as before. Pitch is new:
+     mouse-Y shifts the horizon line up/down (the classic
+     raycaster "look" hack — no true vertical geometry needed,
+     but it reads as full freedom of view because every wall,
+     floor, ceiling and sprite row is measured from that same
+     shifted horizon).
+  ========================================================= */
+  const player = { x: museum.spawn.x, y: museum.spawn.y, angle: 0, pitch: 0, speed: 2.6, runMul: 1.8 };
+  const keys = {};
+  let mouseLocked = false;
+  let mapOpen = false;
+
+  const overlay = document.getElementById("overlay");
+  overlay.addEventListener("click", () => {
+    canvas.requestPointerLock?.() ?? document.body.requestPointerLock?.();
+  });
+  document.addEventListener("pointerlockchange", () => {
+    mouseLocked = document.pointerLockElement === canvas || document.pointerLockElement === document.body;
+    overlay.style.display = mouseLocked ? "none" : "flex";
+  });
+  document.addEventListener("mousemove", (e) => {
+    if (!mouseLocked || mapOpen) return;
+    player.angle += e.movementX * 0.0022;
+    player.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, player.pitch - e.movementY * 0.045));
+  });
+  window.addEventListener("keydown", (e) => {
+    keys[e.code] = true;
+    if (e.code === "KeyM" && !e.repeat) mapOpen = !mapOpen;
+  });
+  window.addEventListener("keyup",   (e) => { keys[e.code] = false; });
+
+  function tryMove(nx, ny) {
+    const pad = 0.2;
+    if (!isWall(nx + Math.sign(nx - player.x) * pad, player.y) && !isSpriteBlocked(nx, player.y)) player.x = nx;
+    if (!isWall(player.x, ny + Math.sign(ny - player.y) * pad) && !isSpriteBlocked(player.x, ny)) player.y = ny;
+  }
+  function updatePlayer(dt) {
+    if (mapOpen) return;
+    let dx = 0, dy = 0;
+    const forward = { x: Math.cos(player.angle), y: Math.sin(player.angle) };
+    const strafe  = { x: Math.cos(player.angle + Math.PI / 2), y: Math.sin(player.angle + Math.PI / 2) };
+    if (keys["KeyW"] || keys["ArrowUp"])   { dx += forward.x; dy += forward.y; }
+    if (keys["KeyS"] || keys["ArrowDown"]) { dx -= forward.x; dy -= forward.y; }
+    if (keys["KeyD"]) { dx += strafe.x; dy += strafe.y; }
+    if (keys["KeyA"]) { dx -= strafe.x; dy -= strafe.y; }
+    if (keys["ArrowLeft"])  player.angle -= 1.8 * dt;
+    if (keys["ArrowRight"]) player.angle += 1.8 * dt;
+
+    const len = Math.hypot(dx, dy);
+    if (len > 0) {
+      dx /= len; dy /= len;
+      const mul = keys["ShiftLeft"] || keys["ShiftRight"] ? player.runMul : 1;
+      const step = player.speed * mul * dt;
+      tryMove(player.x + dx * step, player.y + dy * step);
+    }
+  }
+
+  /* =========================================================
+     6. RAYCASTING — classic grid DDA (Lodev-style).
+     Gives exact perpendicular distance (no fisheye hack needed),
+     which wall face was hit, and wallX: the 0..1 position along
+     that face — the coordinate every wall texture is sampled at.
+  ========================================================= */
+  function castRay(rayAngle) {
+    const dirX = Math.cos(rayAngle), dirY = Math.sin(rayAngle);
+    let mapX = Math.floor(player.x), mapY = Math.floor(player.y);
+
+    const deltaDistX = dirX === 0 ? Infinity : Math.abs(1 / dirX);
+    const deltaDistY = dirY === 0 ? Infinity : Math.abs(1 / dirY);
+
+    let stepX, stepY, sideDistX, sideDistY;
+    if (dirX < 0) { stepX = -1; sideDistX = (player.x - mapX) * deltaDistX; }
+    else          { stepX = 1;  sideDistX = (mapX + 1 - player.x) * deltaDistX; }
+    if (dirY < 0) { stepY = -1; sideDistY = (player.y - mapY) * deltaDistY; }
+    else          { stepY = 1;  sideDistY = (mapY + 1 - player.y) * deltaDistY; }
+
+    let side = 0, cellValue = 1, hit = false, iter = 0;
+    while (!hit && iter < 160) {
+      if (sideDistX < sideDistY) { sideDistX += deltaDistX; mapX += stepX; side = 0; }
+      else                       { sideDistY += deltaDistY; mapY += stepY; side = 1; }
+      if (mapX < 0 || mapY < 0 || mapX >= museum.W || mapY >= museum.H) { cellValue = 1; hit = true; break; }
+      cellValue = museum.grid[mapY][mapX];
+      if (cellValue !== 0) hit = true;
+      iter++;
+    }
+
+    let perpDist = side === 0
+      ? (mapX - player.x + (1 - stepX) / 2) / dirX
+      : (mapY - player.y + (1 - stepY) / 2) / dirY;
+    perpDist = Math.abs(perpDist);
+
+    let wallX = side === 0 ? player.y + perpDist * dirY : player.x + perpDist * dirX;
+    wallX -= Math.floor(wallX);
+
+    return { perpDist, side, mapX, mapY, wallX, cellValue, dirX, dirY };
+  }
+
+  /* =========================================================
+     7. WALL TEXTURES
+     One function per material. Every function reads the same
+     (wallX, rowFrac) face coordinate and returns { ch, colr }.
+  ========================================================= */
+  function stoneWallTexture(wallX, rowFrac, brightness) {
+    const courseH = 0.125;
+    const course = Math.floor(rowFrac / courseH);
+    const brickW = 0.2;
+    const offset = (course % 2) * (brickW / 2);
+    const u = (wallX + offset) % brickW;
+    const uLocal = u / brickW;
+    const vLocal = (rowFrac % courseH) / courseH;
+    const mortar = uLocal < 0.07 || uLocal > 0.93 || vLocal < 0.09;
+    const brickIdx = Math.floor((wallX + offset) / brickW) + course * 97;
+    const n = Math.sin(brickIdx * 12.9898) * 43758.5453;
+    const noise = n - Math.floor(n);
+    if (mortar) {
+      return { ch: rampChar(WALL_RAMP, brightness * 0.32), colr: shade(MORTAR_COLOR, 0.2 + brightness * 0.55) };
+    }
+    const shadeVar = 0.82 + noise * 0.32;
+    return { ch: rampChar(WALL_RAMP, brightness * shadeVar), colr: shade(WALL_COLOR, (0.25 + brightness * 0.75) * shadeVar) };
+  }
+
+  function columnTexture(wallX, rowFrac, brightness) {
+    const band = rowFrac < 0.09 || rowFrac > 0.91;
+    const edge = Math.abs(rowFrac - 0.09) < 0.015 || Math.abs(rowFrac - 0.91) < 0.015;
+    if (edge) return { ch: "-", colr: shade(COLUMN_SHADOW, 0.3 + brightness * 0.5) };
+    if (band) return { ch: rampChar(WALL_RAMP, 0.75 + brightness * 0.25), colr: shade(COLUMN_COLOR, 0.55 + brightness * 0.45) };
+    const flute = Math.sin(wallX * Math.PI * 10);
+    const t = Math.max(0, Math.min(1, 0.45 + flute * 0.3 + brightness * 0.35));
+    const cshade = Math.max(0.15, Math.min(1, 0.35 + brightness * 0.65 + flute * 0.15));
+    return { ch: rampChar(WALL_RAMP, t), colr: shade(COLUMN_COLOR, cshade) };
+  }
+
+  function windowTexture(wallX, rowFrac, brightness, timeSec) {
+    const cx0 = 0.10, cx1 = 0.90, cy0 = 0.05, cy1 = 0.95;
+    if (wallX < cx0 || wallX > cx1 || rowFrac < cy0 || rowFrac > cy1) {
+      return stoneWallTexture(wallX, rowFrac, brightness);
+    }
+    const frameM = 0.06;
+    const archFrac = 0.35;
+    const localU = (wallX - cx0) / (cx1 - cx0);
+    const localV = (rowFrac - cy0) / (cy1 - cy0);
+
+    let inGlass;
+    if (localV < archFrac) {
+      const half = (0.5 - frameM) * (localV / archFrac);
+      inGlass = Math.abs(localU - 0.5) <= half;
+    } else {
+      inGlass = localU > frameM && localU < 1 - frameM && localV < 1 - frameM;
+    }
+    const mullion = (Math.abs(localU - 0.5) < 0.028 && localV > archFrac) ||
+                     (Math.abs(localV - 0.64) < 0.022 && localV > archFrac);
+    if (mullion) return { ch: "|", colr: shade([20, 18, 24], 0.5 + brightness * 0.3) };
+    if (!inGlass) {
+      return { ch: rampChar(WALL_RAMP, 0.6 + brightness * 0.35), colr: shade(COLUMN_COLOR, 0.45 + brightness * 0.5) };
+    }
+    const shimmer = 0.08 * Math.sin(timeSec * 0.7 + localU * 5);
+    const t = Math.max(0, Math.min(1, (localU * 0.5 + localV * 0.5) + shimmer));
+    const glassColor = lerpColor3(GLASS_COLORS, t);
+    const glow = 0.62 + brightness * 0.22 + shimmer * 0.5;
+    return { ch: rampChar(WALL_RAMP, 0.5 + glow * 0.4), colr: shade(glassColor, Math.max(0.35, Math.min(1, glow))) };
+  }
+
+  function torchCellTexture(painting, wallX, rowFrac, brightness, timeSec, torchRef) {
+    const flame = torchRef ? torchFlicker(torchRef, timeSec) : 0.85;
+    const fx = wallX - 0.5, fyTop = rowFrac - 0.38;
+    const flameDist = Math.hypot(fx * 2.2, (rowFrac - 0.4) * 3.4);
+    if (rowFrac > 0.18 && rowFrac < 0.55 && flameDist < 0.42 * (1.15 - rowFrac)) {
+      const core = Math.max(0, 1 - flameDist * 2.1);
+      const flameColor = lerpColor(TORCH_FLAME_B, TORCH_FLAME_A, core);
+      return { ch: rampChar(WALL_RAMP, 0.7 + core * 0.3), colr: shade(flameColor, Math.min(1, 0.7 + flame * 0.3)) };
+    }
+    if (rowFrac >= 0.55 && rowFrac < 0.72 && Math.abs(wallX - 0.5) < 0.10) {
+      return { ch: "#", colr: shade([40, 32, 24], 0.35 + brightness * 0.3) };
+    }
+    return stoneWallTexture(wallX, rowFrac, brightness * 0.85);
+  }
+
+  const TAPESTRY_PALETTES = [
+    [[128, 24, 30], [196, 160, 68]],
+    [[24, 92, 62], [200, 200, 210]],
+    [[30, 52, 118], [206, 168, 76]],
+    [[96, 34, 110], [214, 190, 120]],
+  ];
+  function tapestryTexture(wallX, rowFrac, brightness, seed) {
+    const cx0 = 0.18, cx1 = 0.82, cy0 = 0.04, cy1 = 0.88, fringeY = 0.96;
+    if (wallX < cx0 - 0.03 || wallX > cx1 + 0.03 || rowFrac < cy0 - 0.03 || rowFrac > fringeY) {
+      return stoneWallTexture(wallX, rowFrac, brightness);
+    }
+    if (rowFrac < cy0) return { ch: "=", colr: shade([60, 50, 40], 0.4 + brightness * 0.4) };
+    if (rowFrac > cy1) {
+      const tassel = Math.floor(wallX * 14) % 2 === 0;
+      return { ch: tassel ? "!" : ".", colr: shade([50, 42, 30], 0.3 + brightness * 0.4) };
+    }
+    if (wallX < cx0 || wallX > cx1) return stoneWallTexture(wallX, rowFrac, brightness);
+    const palette = TAPESTRY_PALETTES[seed % TAPESTRY_PALETTES.length];
+    const weave = (Math.floor(wallX * 22) + Math.floor(rowFrac * 22)) % 2 === 0;
+    const col = weave ? palette[0] : palette[1];
+    return { ch: rampChar(WALL_RAMP, 0.35 + brightness * 0.5), colr: shade(col, 0.35 + brightness * 0.6) };
+  }
+
+  /* ---- ceiling: gilded vault ribs over a field of soft, slowly
+     twinkling stars — an enchanted painted sky above the halls ---- */
+  function ceilingTexture(fx, fy, t, ambientFlicker, ceilGlow, timeSec) {
+    const mod = (v, m) => ((v % m) + m) % m;
+    const ribSpacing = 2.2;
+    const ribX = mod(fx, ribSpacing) < 0.06;
+    const ribY = mod(fy, ribSpacing) < 0.06;
+    if (ribX || ribY) {
+      const pulse = 0.5 + 0.5 * Math.sin(timeSec * 0.5 + fx * 0.7 + fy * 0.7);
+      return {
+        ch: rampChar(WALL_RAMP, 0.5 + t * 0.35),
+        colr: shade([196, 150, 64], Math.min(1, (0.3 + t * 0.5) * ambientFlicker + ceilGlow + pulse * 0.1)),
+      };
+    }
+    const cellX = Math.floor(fx * 2.4), cellY = Math.floor(fy * 2.4);
+    const h = Math.sin(cellX * 12.9898 + cellY * 78.233) * 43758.5453;
+    const n = h - Math.floor(h);
+    if (n > 0.955) {
+      const twinkle = 0.5 + 0.5 * Math.sin(timeSec * 2.3 + n * 60);
+      return {
+        ch: twinkle > 0.45 ? "*" : ".",
+        colr: shade([228, 224, 250], Math.min(1, 0.45 + twinkle * 0.55)),
+      };
+    }
+    return {
+      ch: rampChar(CEIL_RAMP, Math.min(1, t * 0.55 + ceilGlow)),
+      colr: shade(CEIL_COLOR, Math.min(1, (0.3 + t * 0.55) * ambientFlicker + ceilGlow)),
+    };
+  }
+
+  /* =========================================================
+     8. PAINTING TEXTURE (sponsor art)
+  ========================================================= */
+  function paintCell(painting, tier, wallX, rowFrac, brightness) {
+    const cx0 = 0.5 - tier.wFrac / 2, cx1 = 0.5 + tier.wFrac / 2;
+    const cy0 = 0.5 - tier.hFrac / 2, cy1 = 0.5 + tier.hFrac / 2;
+    const fx0 = cx0 - 0.035, fx1 = cx1 + 0.035;
+    const fy0 = cy0 - 0.035, fy1 = cy1 + 0.035;
+
+    if (wallX < fx0 || wallX > fx1 || rowFrac < fy0 || rowFrac > fy1) {
+      return stoneWallTexture(wallX, rowFrac, brightness);
+    }
+
+    const inCanvas = wallX >= cx0 && wallX <= cx1 && rowFrac >= cy0 && rowFrac <= cy1;
+    if (!inCanvas) {
+      return { ch: rampChar(WALL_RAMP, 0.6 + brightness * 0.4), colr: shade(tier.frame, 0.5 + brightness * 0.5) };
+    }
+
+    const plaqueH = 0.22;
+    const plaqueY0 = cy1 - plaqueH * (cy1 - cy0);
+
+    if (rowFrac >= plaqueY0) {
+      const label = painting.name.toUpperCase().slice(0, tier.maxLen);
+      const n = label.length;
+      const localU = (wallX - cx0) / (cx1 - cx0);
+      const localV = (rowFrac - plaqueY0) / (cy1 - plaqueY0);
+      const idx = Math.min(n - 1, Math.max(0, Math.floor(localU * n)));
+      const cu = localU * n - idx;
+      const col = Math.min(4, Math.max(0, Math.floor(cu * 5)));
+      const rw = Math.min(6, Math.max(0, Math.floor(localV * 7)));
+      const ink = glyphAt(label[idx], col, rw);
+      return ink
+        ? { ch: "#", colr: shade(PLAQUE_INK, 0.55 + brightness * 0.45) }
+        : { ch: ".", colr: shade(PLAQUE_BG, 0.3 + brightness * 0.4) };
+    }
+
+    // enchanted-portrait canvas — a cheap procedural swirl, unique per painting position
+    const seed = painting.x * 12.9898 + painting.y * 78.233;
+    const n1 = Math.sin(wallX * 9 + seed) * Math.cos(rowFrac * 7 + seed * 0.7);
+    const v = (n1 + 1) / 2;
+    const artColor = lerpColor(tier.canvasA, tier.canvasB, v);
+    return {
+      ch: rampChar(WALL_RAMP, 0.25 + v * 0.55),
+      colr: shade(artColor, 0.3 + brightness * 0.65 + v * 0.1),
+    };
+  }
+
+  /* =========================================================
+     9. SPRITE TEXTURES — free-standing set pieces.
+     Each takes local (u, v) across its own billboard, 0..1,
+     and returns { ch, colr } or null for a transparent pixel.
+  ========================================================= */
+  function pedestalTexture(u, v, brightness, glow, timeSec) {
+    const du = u - 0.5;
+    if (v > 0.55) {
+      const halfW = 0.10 + (v - 0.55) * 0.62;
+      if (Math.abs(du) > halfW) return null;
+      const b = Math.max(0.2, Math.min(1, brightness * 0.7 + 0.2));
+      return { ch: rampChar(WALL_RAMP, 0.4 + b * 0.4), colr: shade(COLUMN_COLOR, b) };
+    }
+    const cx = 0.5, cyv = 0.28;
+    const d = Math.hypot((u - cx) * 2.1, (v - cyv) * 2.6);
+    const pulse = 0.7 + 0.3 * Math.sin(timeSec * 2.2);
+    if (d < 0.14) {
+      const core = Math.max(0, 1 - d / 0.14);
+      return { ch: rampChar(WALL_RAMP, 0.75 + core * 0.25), colr: shade(TORCH_FLAME_A, Math.min(1, 0.6 + core * 0.4 + pulse * 0.2)) };
+    }
+    if (d < 0.26) {
+      const ring = 1 - (d - 0.14) / 0.12;
+      return { ch: ".", colr: shade(TORCH_FLAME_B, Math.max(0, ring * 0.5 * pulse)) };
+    }
+    return null;
+  }
+
+  function chandelierTexture(u, v, brightness, glow, timeSec) {
+    const du = u - 0.5;
+    const flicker = (phase) => 0.72 + 0.28 * Math.sin(timeSec * 7 + phase);
+    const lit = Math.min(1, brightness * 0.5 + 0.3 + glow * 0.3);
+
+    // the chain running from the ceiling attachment down to the body
+    if (Math.abs(du) < 0.012 && v < 0.88) {
+      return { ch: "|", colr: shade([58, 50, 34], 0.35 + lit * 0.35) };
+    }
+    // ornate gilded canopy where the chain meets the fixture
+    if (v > 0.09 && v < 0.15) {
+      const w = 0.055 * (1 - Math.abs(v - 0.12) / 0.03);
+      if (Math.abs(du) < w) return { ch: "^", colr: shade([196, 150, 64], 0.5 + lit * 0.45) };
+    }
+
+    const CROWN = { cy: 0.20, r: 0.075, spokes: 5 };
+    const UPPER = { cy: 0.34, r: 0.22, spokes: 8 };
+    const LOWER = { cy: 0.66, r: 0.44, spokes: 12 };
+
+    // diagonal support arms bracing the canopy to the upper ring —
+    // gives the fixture a real gilded skeleton instead of a bare pole
+    for (const sgn of [-1, 1]) {
+      const armT = (v - 0.15) / (UPPER.cy - 0.15);
+      if (armT > 0 && armT < 1) {
+        const armX = sgn * armT * UPPER.r * 0.85;
+        if (Math.abs(du - armX) < 0.010) {
+          return { ch: sgn < 0 ? "\\" : "/", colr: shade([196, 150, 64], 0.4 + lit * 0.4) };
+        }
+      }
+    }
+
+    // the three gilded rings themselves — crown, upper, lower
+    for (const ring of [CROWN, UPPER, LOWER]) {
+      const d = Math.hypot(du * 1.5, (v - ring.cy) * 1.7);
+      if (Math.abs(d - ring.r) < (ring === CROWN ? 0.022 : 0.032)) {
+        return { ch: "=", colr: shade([196, 150, 64], 0.45 + lit * 0.4) };
+      }
+    }
+    // small finial orbs crowning the topmost ring
+    for (let i = 0; i < CROWN.spokes; i++) {
+      const ang = (i / CROWN.spokes) * Math.PI * 2;
+      const cxp = Math.cos(ang) * CROWN.r, cyp = CROWN.cy + Math.sin(ang) * CROWN.r * 0.7;
+      if (Math.hypot(du - cxp, v - cyp) < 0.022) {
+        return { ch: "o", colr: shade([222, 200, 140], 0.5 + lit * 0.5) };
+      }
+    }
+    // candle flames at every spoke of the upper and lower rings
+    for (const ring of [UPPER, LOWER]) {
+      for (let i = 0; i < ring.spokes; i++) {
+        const ang = (i / ring.spokes) * Math.PI * 2;
+        const cxp = Math.cos(ang) * ring.r * 0.75, cyp = ring.cy + Math.sin(ang) * ring.r * 0.75 * 0.7;
+        if (Math.hypot(du - cxp, v - cyp) < 0.05) {
+          const f = flicker(i * 1.7 + ring.cy * 4);
+          return { ch: rampChar(WALL_RAMP, 0.55 + f * 0.45), colr: shade(TORCH_FLAME_A, Math.min(1, 0.55 + f * 0.45)) };
+        }
+      }
+    }
+    // twin-tier crystal drops hanging from the underside of the lower ring
+    for (let i = 0; i < LOWER.spokes; i++) {
+      const ang = (i / LOWER.spokes) * Math.PI * 2;
+      if (Math.sin(ang) < 0.05) continue;
+      const cxp = Math.cos(ang) * LOWER.r * 0.95, cyp = LOWER.cy + Math.sin(ang) * LOWER.r * 0.95 * 0.7;
+      const dropLen = (i % 2 === 0) ? 0.16 : 0.10;
+      if (v > cyp && v < cyp + dropLen && Math.abs(du - cxp) < 0.014) {
+        const t = (v - cyp) / dropLen;
+        const glassColor = lerpColor3(GLASS_COLORS, 0.5 + 0.5 * Math.sin(timeSec + i));
+        return { ch: t > 0.7 ? "v" : "'", colr: shade(glassColor, Math.max(0.3, 1 - t * 0.4) * (0.6 + lit * 0.4)) };
+      }
+    }
+    // a middle skirt of smaller crystals off the upper ring, for depth
+    for (let i = 0; i < UPPER.spokes; i++) {
+      const ang = (i / UPPER.spokes) * Math.PI * 2;
+      if (Math.sin(ang) < 0.05) continue;
+      const cxp = Math.cos(ang) * UPPER.r * 0.9, cyp = UPPER.cy + Math.sin(ang) * UPPER.r * 0.9 * 0.7;
+      const dropLen = 0.07;
+      if (v > cyp && v < cyp + dropLen && Math.abs(du - cxp) < 0.011) {
+        const t = (v - cyp) / dropLen;
+        const glassColor = lerpColor3(GLASS_COLORS, 0.3 + 0.5 * Math.sin(timeSec * 1.1 + i * 2));
+        return { ch: "'", colr: shade(glassColor, Math.max(0.3, 1 - t * 0.5) * (0.6 + lit * 0.4)) };
+      }
+    }
+    // one large pendant crystal, hanging lowest at the very centre
+    const pd = Math.hypot(du * 2.6, (v - 0.94) * 2.0);
+    if (v > 0.84 && pd < 0.075) {
+      const core = Math.max(0, 1 - pd / 0.075);
+      const glassColor = lerpColor3(GLASS_COLORS, 0.5 + 0.5 * Math.sin(timeSec * 1.3));
+      return { ch: rampChar(WALL_RAMP, 0.6 + core * 0.4), colr: shade(glassColor, Math.min(1, 0.5 + core * 0.5 + lit * 0.3)) };
+    }
+    return null;
+  }
+
+  const SPRITE_DEFS = {
+    pedestal:   { hWorld: 0.72, wWorld: 0.50, anchor: 'floor',   collide: true,  radius: 0.34, tex: pedestalTexture },
+    chandelier: { hWorld: 1.85, wWorld: 1.55, anchor: 'ceiling', collide: false, radius: 0,    tex: chandelierTexture },
+  };
+  for (const s of museum.sprites) {
+    const d = SPRITE_DEFS[s.type];
+    s.collide = d.collide; s.radius = d.radius;
+  }
+
+  /* =========================================================
+     10. MAIN RENDER
+  ========================================================= */
+  /* ---- full map overlay: press M — the whole hall laid out at once,
+     drawn in the same character grid and colour language as the rest
+     of the game, rather than a separate UI style. ---- */
+  const MAP_CH = {
+    1: ["#", "rgba(140,138,155,0.5)"],
+    3: ["I", "rgba(206,196,168,0.85)"],
+    4: ["\u25AF", "rgba(120,150,220,0.85)"],
+    5: ["*", "#e8934f"],
+    6: ["~", "rgba(150,90,110,0.8)"],
+  };
+  const TIER_DOT_COLOR = { platinum: "#d6d6de", gold: "#c49b40", silver: "#b0b0b8" };
+  function renderFullMap(timeSec) {
+    ctx.fillStyle = "#0d0f14";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const title = "IDEAX \u2014 FULL MAP";
+    ctx.fillStyle = "#e8e2f5";
+    ctx.fillText(title, ((COLS - title.length) / 2) * CHAR_W, 1.4 * CHAR_H);
+
+    const marginTop = 4, marginBottom = 3;
+    const availCols = COLS - 6, availRows = ROWS - marginTop - marginBottom;
+    const cell = Math.max(1, Math.floor(Math.min(availCols / museum.W, availRows / museum.H)));
+    const gridW = museum.W * cell, gridH = museum.H * cell;
+    const offCol = Math.floor((COLS - gridW) / 2);
+    const offRow = marginTop + Math.floor((availRows - gridH) / 2);
+
+    for (let y = 0; y < museum.H; y++) {
+      for (let x = 0; x < museum.W; x++) {
+        const v = museum.grid[y][x];
+        if (v === 0) continue;
+        let ch = "#", color = "rgba(140,138,155,0.5)";
+        if (v === 2) {
+          const p = PAINTING_LOOKUP[`${x},${y}`];
+          ch = "\u25AE";
+          color = p ? TIER_DOT_COLOR[p.tier] : "#d9a544";
+        } else if (MAP_CH[v]) {
+          [ch, color] = MAP_CH[v];
+        }
+        ctx.fillStyle = color;
+        for (let cy = 0; cy < cell; cy++) {
+          for (let cx = 0; cx < cell; cx++) {
+            ctx.fillText(ch, (offCol + x * cell + cx) * CHAR_W, (offRow + y * cell + cy) * CHAR_H);
+          }
+        }
+      }
+    }
+
+    ctx.fillStyle = "#e8e2f5";
+    for (const r of ROOMS) {
+      const label = r.name;
+      const cx = offCol + ((r.x0 + r.x1 + 1) / 2) * cell;
+      const cy = offRow + ((r.y0 + r.y1 + 1) / 2) * cell;
+      ctx.fillText(label, (cx - label.length / 2) * CHAR_W, cy * CHAR_H);
+    }
+
+    const blink = Math.sin(timeSec * 6) > 0;
+    const px = offCol + player.x * cell, py = offRow + player.y * cell;
+    ctx.fillStyle = "#b3382b";
+    ctx.fillText(blink ? "@" : "\u25CF", px * CHAR_W, py * CHAR_H);
+    const ax = px + Math.cos(player.angle) * 1.6, ay = py + Math.sin(player.angle) * 1.6;
+    ctx.fillText("\u2022", ax * CHAR_W, ay * CHAR_H);
+
+    const legendY = (ROWS - 2) * CHAR_H;
+    ctx.fillStyle = TIER_DOT_COLOR.platinum; ctx.fillText("\u25AE PLATINUM", 3 * CHAR_W, legendY);
+    ctx.fillStyle = TIER_DOT_COLOR.gold;     ctx.fillText("\u25AE GOLD", 17 * CHAR_W, legendY);
+    ctx.fillStyle = TIER_DOT_COLOR.silver;   ctx.fillText("\u25AE SILVER", 26 * CHAR_W, legendY);
+    ctx.fillStyle = "#b3382b";               ctx.fillText("@ YOU", 37 * CHAR_W, legendY);
+    ctx.fillStyle = "#4a4a5c";
+    const hint = "press M to close";
+    ctx.fillText(hint, (COLS - hint.length - 3) * CHAR_W, legendY);
+  }
+
+  function render(timeSec) {
+    if (mapOpen) { renderFullMap(timeSec); return; }
+    ctx.fillStyle = "#0d0f14";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const horizon = ROWS / 2 + player.pitch;
+    const ambientFlicker = 0.97 + 0.03 * Math.sin(timeSec * 3.1) + 0.02 * Math.sin(timeSec * 5.7);
+
+    for (let col = 0; col < COLS; col++) {
+      const rayAngle = player.angle - HALF_FOV + (col / COLS) * FOV;
+      const { perpDist, side, wallX, cellValue, dirX, dirY, mapX, mapY } = castRay(rayAngle);
+      zbuffer[col] = perpDist;
+
+      // wall height comes straight from the grid the ray hit — this is
+      // what makes each hall's walls run all the way up to its own
+      // ceiling, instead of every wall sharing one fixed height.
+      const wallH = (museum.heightGrid[mapY] && museum.heightGrid[mapY][mapX]) || 3.2;
+      const totalHeight = Math.max(1, Math.min(ROWS * 8, Math.round(wallH * ROWS / (perpDist + 0.0001))));
+      // split that height around the horizon in proportion to real eye
+      // height rather than straight down the middle — most of a tall
+      // hall's wall rises above the horizon, only a sliver falls below.
+      const scalePerUnit = totalHeight / wallH;
+      const aboveEye = Math.max(0, wallH - EYE_HEIGHT) * scalePerUnit;
+      const belowEye = Math.min(wallH, EYE_HEIGHT) * scalePerUnit;
+      const wallTop = Math.floor(horizon - aboveEye);
+      const wallBottom = Math.floor(horizon + belowEye);
+      const baseBrightness = Math.max(0, 1 - perpDist / MAX_DEPTH) * (side === 0 ? 1 : 0.72) * ambientFlicker;
+
+      // torch warmth for this column's wall hit point (once per column, not per row)
+      const hitWX = mapX + (side === 0 ? (dirX > 0 ? 0 : 1) : wallX);
+      const hitWY = mapY + (side === 1 ? (dirY > 0 ? 0 : 1) : wallX);
+      const wallGlow = torchGlow(side === 0 ? mapX + (dirX > 0 ? 0 : 1) : player.x + perpDist * dirX,
+                                  side === 1 ? mapY + (dirY > 0 ? 0 : 1) : player.y + perpDist * dirY, timeSec);
+      const brightness = Math.min(1, baseBrightness + wallGlow * 0.28);
+
+      let painting = null, tier = null, torchRef = null, tapestrySeed = 0;
+      if (cellValue === 2) { painting = PAINTING_LOOKUP[`${mapX},${mapY}`]; tier = painting ? TIERS[painting.tier] : null; }
+      if (cellValue === 5) { torchRef = TORCHES.find(t => Math.floor(t.x) === mapX && Math.floor(t.y) === mapY) || null; }
+      if (cellValue === 6) { tapestrySeed = Math.abs((mapX * 7 + mapY * 13) | 0); }
+
+      const px = col * CHAR_W;
+      for (let row = 0; row < ROWS; row++) {
+        const py = row * CHAR_H;
+        let ch = " ", colr = null;
+
+        if (row < wallTop) {
+          const rowDist = horizon / Math.max(0.0001, (horizon - row));
+          const t = Math.max(0, 1 - rowDist / MAX_DEPTH);
+          const cfx = player.x + dirX * rowDist, cfy = player.y + dirY * rowDist;
+          const ceilGlow = torchGlow(cfx, cfy, timeSec) * 0.15;
+          const ceilResult = ceilingTexture(cfx, cfy, t, ambientFlicker, ceilGlow, timeSec);
+          ch = ceilResult.ch; colr = ceilResult.colr;
+        } else if (row <= wallBottom) {
+          const rowFrac = (row - wallTop) / Math.max(1, wallBottom - wallTop);
+          let result;
+          if (cellValue === 2 && painting && tier) result = paintCell(painting, tier, wallX, rowFrac, brightness);
+          else if (cellValue === 3) result = columnTexture(wallX, rowFrac, brightness);
+          else if (cellValue === 4) result = windowTexture(wallX, rowFrac, brightness, timeSec);
+          else if (cellValue === 5) result = torchCellTexture(null, wallX, rowFrac, brightness, timeSec, torchRef);
+          else if (cellValue === 6) result = tapestryTexture(wallX, rowFrac, brightness, tapestrySeed);
+          else result = stoneWallTexture(wallX, rowFrac, brightness);
+          ch = result.ch; colr = result.colr;
+        } else {
+          const rowDist = horizon / Math.max(0.0001, (row - horizon));
+          const t = Math.max(0, 1 - rowDist / MAX_DEPTH);
+          const fx = player.x + dirX * rowDist;
+          const fy = player.y + dirY * rowDist;
+          const plank = (Math.floor(fx * 2) + Math.floor(fy * 2)) % 2 === 0;
+          const floorGlow = torchGlow(fx, fy, timeSec);
+          ch = rampChar(FLOOR_RAMP, Math.min(1, t + floorGlow * 0.5));
+          const floorBase = plank ? FLOOR_COLOR_A : FLOOR_COLOR_B;
+          colr = shade(floorBase, Math.min(1, (0.3 + t * 0.6) * ambientFlicker + floorGlow * 0.55));
+        }
+
+        if (ch !== " ") { ctx.fillStyle = colr; ctx.fillText(ch, px, py); }
+      }
+    }
+
+    /* ---- sprite pass: billboards, back-to-front, z-tested ---- */
+    const projected = [];
+    for (const s of museum.sprites) {
+      const dx = s.x - player.x, dy = s.y - player.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 0.15) continue;
+      let angle = Math.atan2(dy, dx) - player.angle;
+      angle = ((angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+      if (Math.abs(angle) > HALF_FOV + 0.5) continue;
+      projected.push({ s, dist, angle });
+    }
+    projected.sort((a, b) => b.dist - a.dist);
+
+    for (const { s, dist, angle } of projected) {
+      const def = SPRITE_DEFS[s.type];
+      const sizeMul = s.scale || 1;
+      const rowsPerUnit = ROWS / dist;
+      const colsPerUnit = COLS / FOV / dist;
+      const colCenter = COLS / 2 + (angle * COLS) / FOV;
+      const spriteH = rowsPerUnit * def.hWorld * sizeMul;
+      const spriteW = colsPerUnit * def.wWorld * sizeMul;
+
+      // anchor against the *actual* floor/ceiling of the room the sprite
+      // stands in, using the same eye-height split as the wall pass, so
+      // chandeliers hang from the genuinely high ceiling of a tall hall
+      // instead of a fixed offset near the horizon.
+      const localH = (museum.heightGrid[Math.floor(s.y)] && museum.heightGrid[Math.floor(s.y)][Math.floor(s.x)]) || 3.2;
+      const floorRow = horizon + Math.min(localH, EYE_HEIGHT) * rowsPerUnit;
+      const ceilRow = horizon - Math.max(0, localH - EYE_HEIGHT) * rowsPerUnit;
+
+      let top, bottom;
+      if (def.anchor === 'floor') {
+        bottom = floorRow;
+        top = bottom - spriteH;
+      } else {
+        top = ceilRow;
+        bottom = top + spriteH;
+      }
+      const left = colCenter - spriteW / 2;
+      const right = colCenter + spriteW / 2;
+
+      const c0 = Math.max(0, Math.floor(left)), c1 = Math.min(COLS - 1, Math.ceil(right));
+      const r0 = Math.max(0, Math.floor(top)), r1 = Math.min(ROWS - 1, Math.ceil(bottom));
+      if (c1 < c0 || r1 < r0) continue;
+
+      const brightness = Math.max(0, 1 - dist / MAX_DEPTH);
+      const glow = torchGlow(s.x, s.y, timeSec);
+
+      for (let col = c0; col <= c1; col++) {
+        if (dist >= zbuffer[col]) continue;
+        const u = (col + 0.5 - left) / (right - left);
+        if (u < 0 || u > 1) continue;
+        const px = col * CHAR_W;
+        for (let row = r0; row <= r1; row++) {
+          const v = (row + 0.5 - top) / (bottom - top);
+          if (v < 0 || v > 1) continue;
+          const result = def.tex(u, v, brightness, glow, timeSec);
+          if (!result) continue;
+          ctx.fillStyle = result.colr;
+          ctx.fillText(result.ch, px, row * CHAR_H);
+        }
+      }
+    }
+  }
+
+  /* ---- minimap ---- */
+  const mmCanvas = document.getElementById("minimap");
+  const mmCtx = mmCanvas.getContext("2d");
+  const MM_COLORS = {
+    1: "rgba(150,150,165,0.35)",
+    2: "rgba(217,165,68,0.9)",
+    3: "rgba(210,196,168,0.55)",
+    4: "rgba(120,150,220,0.75)",
+    5: "rgba(230,140,50,0.85)",
+    6: "rgba(150,90,110,0.6)",
+  };
+  function renderMinimap() {
+    const size = mmCanvas.width;
+    const cell = size / 12;
+    mmCtx.fillStyle = "#0d0f14";
+    mmCtx.fillRect(0, 0, size, size);
+    const startX = Math.floor(player.x - 6);
+    const startY = Math.floor(player.y - 6);
+    for (let y = 0; y < 12; y++) {
+      for (let x = 0; x < 12; x++) {
+        const mx = startX + x, my = startY + y;
+        if (mx < 0 || my < 0 || mx >= museum.W || my >= museum.H) continue;
+        const v = museum.grid[my][mx];
+        if (v !== 0) { mmCtx.fillStyle = MM_COLORS[v] || MM_COLORS[1]; mmCtx.fillRect(x * cell, y * cell, cell, cell); }
+      }
+    }
+    const pcx = (player.x - startX) * cell, pcy = (player.y - startY) * cell;
+    mmCtx.fillStyle = "#b3382b";
+    mmCtx.beginPath(); mmCtx.arc(pcx, pcy, 3, 0, Math.PI * 2); mmCtx.fill();
+    mmCtx.strokeStyle = "#b3382b";
+    mmCtx.beginPath(); mmCtx.moveTo(pcx, pcy); mmCtx.lineTo(pcx + Math.cos(player.angle) * 10, pcy + Math.sin(player.angle) * 10); mmCtx.stroke();
+  }
+
+  /* ---- HUD ---- */
+  const hudTR = document.getElementById("hud-tr");
+  const hudBL = document.getElementById("hud-bl");
+  let fps = 0, fpsFrames = 0, fpsTimer = 0;
+  function compass(angle) {
+    const dirs = ["E","SE","S","SW","W","NW","N","NE"];
+    const norm = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    return dirs[Math.round(norm / (Math.PI / 4)) % 8];
+  }
+  function renderHud() {
+    const pitchDeg = Math.round((player.pitch / PITCH_LIMIT) * 60);
+    hudTR.textContent = `FPS ${fps}\nHEADING ${compass(player.angle)}\nPITCH ${pitchDeg >= 0 ? "+" : ""}${pitchDeg}°`;
+    hudBL.textContent = `${currentRoom()}\nX ${player.x.toFixed(2)}  Y ${player.y.toFixed(2)}`;
+  }
+
+  /* ---- main loop ---- */
+  let last = performance.now();
+  const t0 = last;
+  function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    const timeSec = (now - t0) / 1000;
+    updatePlayer(dt);
+    render(timeSec);
+    renderMinimap();
+    fpsFrames++; fpsTimer += dt;
+    if (fpsTimer >= 0.5) { fps = Math.round(fpsFrames / fpsTimer); fpsFrames = 0; fpsTimer = 0; }
+    renderHud();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
