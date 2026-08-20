@@ -255,7 +255,7 @@ export default function OutputPane({ items, onRunCommand, outputRef, onFocusInpu
                   rel="noopener noreferrer"
                   className="register-now-btn"
                 >
-                  ⚡ REGISTER NOW &rarr;
+                  REGISTER NOW &rarr;
                 </a>
                 <a
                   href="https://discord.com/invite/3RctjES2U"
@@ -263,7 +263,7 @@ export default function OutputPane({ items, onRunCommand, outputRef, onFocusInpu
                   rel="noopener noreferrer"
                   className="discord-cta-btn"
                 >
-                  💬 JOIN DISCORD &rarr;
+                  JOIN DISCORD &rarr;
                 </a>
                 <button
                   type="button"

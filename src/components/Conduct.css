@@ -14,11 +14,12 @@
 .conduct-container {
   position: relative;
   z-index: 2;
-  max-width: 800px;
   width: 100%;
+  max-width: 900px;
   padding: 0 24px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 24px;
 }
 
@@ -26,72 +27,224 @@
   color: #e8e2f5;
   font-size: 28px;
   letter-spacing: 5px;
-  text-shadow: 0 0 16px rgba(217,165,68,0.4);
   text-transform: uppercase;
   margin: 0;
   text-align: center;
 }
 
-.conduct-content {
-  background: rgba(30, 32, 42, 0.8);
+.conduct-subtitle {
+  color: #4a4a5c;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: -14px 0 0;
+  text-align: center;
+}
+
+.conduct-slider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.conduct-arrow {
+  background: none;
+  border: 1px solid #4a4a5c;
+  color: #9a97ae;
+  font-size: 16px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.conduct-arrow:hover {
+  color: #e8e2f5;
+  border-color: #38bdf8;
+}
+
+.conduct-viewport {
+  flex: 1;
+  overflow: hidden;
+}
+
+.conduct-track {
+  display: flex;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.conduct-slide {
+  min-width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.conduct-card {
+  background: rgba(30, 32, 42, 0.85);
   border: 1px solid #2a2c3a;
   border-radius: 4px;
   padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 340px;
 }
 
-.conduct-content h3 {
-  margin: 0 0 12px 0;
-  font-size: 13.5px;
-  color: #e8e2f5;
+.conduct-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
 }
 
-.conduct-content p {
-  margin: 8px 0;
-  color: #9a97ae;
-  font-size: 13px;
-  line-height: 1.8;
-}
-
-.conduct-content h4 {
-  margin: 18px 0 8px 0;
+.conduct-badge {
+  font-size: 10px;
+  font-weight: 700;
   color: #38bdf8;
-  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
-.conduct-content ul {
-  margin: 6px 0 12px 18px;
-  padding: 0;
+.conduct-card-title {
+  color: #e8e2f5;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 2px 0 0 0;
+}
+
+.conduct-card-subtitle {
+  color: #7289da;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.conduct-card-body {
   color: #9a97ae;
+  font-size: 13px;
+  line-height: 1.75;
+  overflow-y: auto;
+  max-height: 260px;
+  padding-right: 6px;
 }
 
-.conduct-content ul li {
-  margin-bottom: 4px;
+.conduct-card-body::-webkit-scrollbar {
+  width: 6px;
 }
 
-.conduct-content strong {
+.conduct-card-body::-webkit-scrollbar-thumb {
+  background: #38bdf8;
+  border-radius: 3px;
+}
+
+.conduct-card-body p {
+  margin: 0 0 10px 0;
+}
+
+.conduct-card-body h4 {
+  color: #38bdf8;
+  font-size: 12.5px;
+  margin: 12px 0 4px 0;
+}
+
+.strong-text {
   color: #eaf1ff;
 }
 
-.conduct-meta {
-  margin-top: 16px;
-  color: #38bdf8;
-  font-size: 12px;
+.conduct-list {
+  margin: 4px 0 10px 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.conduct-meta a {
-  color: #3b82f6;
+.conduct-list li {
+  position: relative;
+  padding-left: 18px;
+}
+
+.conduct-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #38bdf8;
+}
+
+.warning-list li::before {
+  color: #f87171;
+}
+
+.conduct-contact-card {
+  background: rgba(10, 18, 38, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 14px 16px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.conduct-contact-card h4 {
+  margin: 0 0 8px 0;
+  color: #38bdf8;
+}
+
+.contact-person {
+  font-size: 12.5px;
+  margin-bottom: 4px;
+}
+
+.contact-person span {
+  color: #eaf1ff;
+}
+
+.contact-person a {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+.contact-person a:hover {
+  text-decoration: underline;
+}
+
+.conduct-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.conduct-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid #4a4a5c;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.conduct-dot.active {
+  background: #38bdf8;
+  border-color: #38bdf8;
 }
 
 @media (max-width: 600px) {
   .conduct-container {
     padding: 0 16px;
   }
-
-  .conduct-content {
+  .conduct-card {
     padding: 20px;
+    min-height: 300px;
   }
-
   .conduct-title {
     font-size: 20px;
+  }
+  .conduct-arrow {
+    display: none;
   }
 }

@@ -97,24 +97,36 @@ a {
   background: radial-gradient(ellipse at center, rgba(13,15,20,0) 45%, rgba(6,7,10,0.8) 100%);
 }
 
-/* ---------------- return button ---------------- */
 .return-btn {
-  position: absolute;
-  bottom: 24px;
-  left: 24px;
-  background: none;
+  position: fixed;
+  bottom: 28px;
+  left: 28px;
+  z-index: 100;
+  background: rgba(10, 18, 38, 0.85);
   border: 1px solid var(--faint);
   color: var(--dim);
   font-family: inherit;
   font-size: 12px;
-  padding: 6px 14px;
+  padding: 8px 16px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
 .return-btn:hover {
   color: var(--text);
   border-color: var(--accent4);
+  background: rgba(14, 24, 48, 0.95);
+}
+
+@media (max-width: 600px) {
+  .return-btn {
+    bottom: 16px;
+    left: 16px;
+    padding: 6px 12px;
+  }
 }
 
 @keyframes crtFlicker {
@@ -325,11 +337,10 @@ body.reduced-motion .app {
 
 .register-cta-card {
   margin: 14px 0;
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  background: linear-gradient(135deg, rgba(14, 24, 48, 0.95) 0%, rgba(10, 18, 38, 0.95) 100%);
+  border: 1px solid var(--line);
+  background: var(--panel2);
   padding: 16px 18px;
-  border-radius: 6px;
-  box-shadow: 0 0 24px rgba(37, 99, 255, 0.18), inset 0 0 12px rgba(56, 189, 248, 0.05);
+  border-radius: 4px;
   position: relative;
   overflow: hidden;
 }
@@ -339,9 +350,9 @@ body.reduced-motion .app {
   position: absolute;
   top: 0;
   left: 0;
-  width: 4px;
+  width: 3px;
   height: 100%;
-  background: linear-gradient(to bottom, var(--accent4), var(--accent));
+  background: var(--accent3);
 }
 
 .register-cta-header {
@@ -352,48 +363,42 @@ body.reduced-motion .app {
 }
 
 .pulse-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   background: #34d399;
   border-radius: 50%;
-  box-shadow: 0 0 8px #34d399;
-  animation: pulseDot 1.8s infinite ease-in-out;
-}
-
-@keyframes pulseDot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.8); }
+  display: inline-block;
 }
 
 .register-cta-title {
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--accent4);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text);
   text-transform: uppercase;
 }
 
 .register-cta-badge {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 2px 6px;
   border-radius: 3px;
-  background: rgba(52, 211, 153, 0.15);
+  background: rgba(52, 211, 153, 0.12);
   color: #34d399;
-  border: 1px solid rgba(52, 211, 153, 0.3);
+  border: 1px solid rgba(52, 211, 153, 0.25);
   letter-spacing: 0.05em;
 }
 
 .register-cta-desc {
   margin: 0 0 14px 0;
-  color: var(--text);
+  color: var(--dim);
   font-size: 13.5px;
   line-height: 1.5;
 }
 
 .highlight-text {
-  color: var(--accent4);
-  font-weight: 700;
+  color: var(--text);
+  font-weight: 600;
 }
 
 .register-cta-actions {
@@ -407,21 +412,20 @@ body.reduced-motion .app {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 18px;
-  background: linear-gradient(135deg, #2563ff 0%, #38bdf8 100%);
+  padding: 7px 16px;
+  background: var(--accent);
   color: #ffffff !important;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.03em;
+  border-radius: 3px;
   text-decoration: none;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid var(--accent2);
+  transition: background 0.15s ease;
 }
 
 .register-now-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 24px rgba(56, 189, 248, 0.7);
+  background: var(--deep);
   text-decoration: none;
 }
 
@@ -429,30 +433,29 @@ body.reduced-motion .app {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 18px;
-  background: linear-gradient(135deg, #5865F2 0%, #7289da 100%);
+  padding: 7px 16px;
+  background: #4f46e5;
   color: #ffffff !important;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.03em;
+  border-radius: 3px;
   text-decoration: none;
-  box-shadow: 0 0 16px rgba(88, 101, 242, 0.4);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid #6366f1;
+  transition: background 0.15s ease;
 }
 
 .discord-cta-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 24px rgba(88, 101, 242, 0.7);
+  background: #4338ca;
   text-decoration: none;
 }
 
 .register-secondary-btn {
   background: transparent;
-  border: 1px dashed var(--accent3);
-  color: var(--accent4);
-  padding: 7px 14px;
-  border-radius: 4px;
+  border: 1px dashed var(--faint);
+  color: var(--dim);
+  padding: 6px 12px;
+  border-radius: 3px;
   font-family: var(--mono);
   font-size: 12px;
   cursor: pointer;
@@ -460,9 +463,9 @@ body.reduced-motion .app {
 }
 
 .register-secondary-btn:hover {
-  background: rgba(56, 189, 248, 0.1);
-  border-color: var(--accent4);
-  color: #ffffff;
+  background: var(--panel);
+  border-color: var(--accent3);
+  color: var(--text);
 }
 
 /* ---------------- suggestion chips ---------------- */
@@ -498,30 +501,26 @@ body.reduced-motion .app {
 }
 
 .chips button.chip-primary {
-  background: linear-gradient(135deg, rgba(37, 99, 255, 0.25) 0%, rgba(56, 189, 248, 0.25) 100%);
-  border: 1px solid var(--accent5);
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+  background: var(--panel);
+  border: 1px solid var(--accent2);
+  color: var(--text);
+  font-weight: 600;
 }
 
 .chips button.chip-primary:hover {
-  background: linear-gradient(135deg, #2563ff 0%, #38bdf8 100%);
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
+  background: var(--accent);
   color: #ffffff;
 }
 
 .chips button.chip-secondary {
-  background: linear-gradient(135deg, rgba(88, 101, 242, 0.25) 0%, rgba(114, 137, 218, 0.25) 100%);
-  border: 1px solid #7289da;
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: 0 0 10px rgba(88, 101, 242, 0.2);
+  background: var(--panel);
+  border: 1px solid #6366f1;
+  color: var(--text);
+  font-weight: 600;
 }
 
 .chips button.chip-secondary:hover {
-  background: linear-gradient(135deg, #5865F2 0%, #7289da 100%);
-  box-shadow: 0 0 16px rgba(88, 101, 242, 0.5);
+  background: #4f46e5;
   color: #ffffff;
 }
 

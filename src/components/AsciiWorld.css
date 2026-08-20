@@ -23,7 +23,6 @@
   transform: translate(-50%, -50%);
   color: #d9a544;
   font-size: 14px;
-  text-shadow: 0 0 6px rgba(217,165,68,0.8);
 }
 
 .ascii-world-hud {
@@ -33,7 +32,6 @@
   font-size: 12px;
   letter-spacing: 0.5px;
   color: #e8e2f5;
-  text-shadow: 0 0 6px rgba(232,226,245,0.4);
 }
 
 .ascii-world-hud-corner {
@@ -53,7 +51,6 @@
   font-size: 11px;
   line-height: 1.35;
   letter-spacing: 0;
-  text-shadow: 0 0 8px rgba(217,165,68,0.55);
 }
 
 .ascii-world-minimap {
@@ -86,7 +83,6 @@
   color: #e8e2f5;
   font-size: 28px;
   letter-spacing: 5px;
-  text-shadow: 0 0 16px rgba(217,165,68,0.5);
 }
 
 .ascii-world-overlay-content p {
