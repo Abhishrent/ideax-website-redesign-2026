@@ -72,7 +72,6 @@ export default function App() {
         timeoutIds.push(t)
       } else {
         setItems(getInitialLandingItems())
-        const t = setTimeout(focusInput, 50)
         setItems(prev => [
           ...prev,
           { type: 'BLANK' },

@@ -11,7 +11,7 @@ export default function SuggestionChips({ onRunCommand }) {
     { label: '$ register', cmd: 'register' },
     { label: '$ prizes', cmd: 'prizes' },
     { label: '$ conduct', cmd: 'conduct' },
-    { label: '$ faq', cmd: 'faq' }
+    { label: '$ faq', cmd: 'faq' },
     { label: '$ countdown', cmd: 'countdown' },
     { label: '$ recap', cmd: 'recap' },
     { label: '$ discord', cmd: 'discord' },
