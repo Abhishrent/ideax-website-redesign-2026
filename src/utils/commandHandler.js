@@ -1,4 +1,5 @@
 import { TRACKS, getDynamicTimeline, TARGET_DATE, DEADLINE_DATE } from './terminalData'
+import { recaps, getRecap } from './recapData'
 
 
 export function executeCommand(rawCommand, { history, onRunCommand }) {
@@ -29,6 +30,12 @@ export function executeCommand(rawCommand, { history, onRunCommand }) {
           ['faq', 'frequently asked questions'],
           ['countdown', 'time remaining until doors open'],
           ['contact', 'email + phone for the organizing team'],
+          ['discord', 'join the community server'],
+          ['testimonials', 'what past participants say'],
+          ['gallery', 'visual testimonial gallery'],
+          ['recap', 'browse past hackathon recaps (2023-2025)'],
+          ['hall', 'visit the sponsor hall of fame'],
+          ['home', 'return to the home screen'],
           ['ls', 'list files in this directory'],
           ['cat <file>', 'print a file, e.g. cat prizes.md'],
           ['fastfetch', 'replay the splash screen'],
@@ -86,6 +93,34 @@ export function executeCommand(rawCommand, { history, onRunCommand }) {
 
     case 'discord':
       return { type: 'DISCORD' }
+
+    case 'testimonials':
+      return { type: 'TESTIMONIALS' }
+
+    case 'gallery':
+      return { type: 'GALLERY' }
+
+    case 'recap': {
+      if (arg) {
+        const year = parseInt(arg, 10)
+        const recap = getRecap(year)
+        if (!recap) {
+          return { type: 'TEXT', text: `recap: no data for ${arg}. available years: 2023, 2024, 2025`, cls: 'warn' }
+        }
+        return { type: 'RECAP_DETAIL', recap }
+      }
+      return { type: 'RECAP_LIST', recaps }
+    }
+
+    case 'hall':
+    case 'halloffame':
+    case 'hall-of-fame':
+    case 'fame':
+    case 'museum':
+      return { type: 'MUSEUM' }
+
+    case 'home':
+      return { type: 'HOME' }
 
     case 'fastfetch':
     case 'neofetch':
