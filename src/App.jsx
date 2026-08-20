@@ -6,6 +6,7 @@ import CommandLine from './components/CommandLine'
 import LoadingIntro from './components/LoadingIntro'
 import AsciiWorld from './components/AsciiWorld'
 import Testimonials from './components/Testimonials'
+import Conduct from './components/Conduct'
 import { executeCommand } from './utils/commandHandler'
 import { TRACKS, getDynamicTimeline } from './utils/terminalData'
 
@@ -72,15 +73,6 @@ export default function App() {
         timeoutIds.push(t)
       } else {
         setItems(getInitialLandingItems())
-        setItems(prev => [
-          ...prev,
-          { type: 'BLANK' },
-          { type: 'FASTFETCH' },
-          { type: 'BLANK' },
-          { type: 'TEXT', text: 'welcome to MBMC IdeaX 2026.', cls: 'strong' },
-          { type: 'TEXT', text: "type 'help' to see available commands, or click a suggestion below.", cls: 'dim' },
-          { type: 'BLANK' }
-        ])
         const t = setTimeout(() => {
           focusInput()
           if (onDone) onDone()
@@ -140,6 +132,9 @@ export default function App() {
     } else if (result && result.type === 'GALLERY') {
       setItems(prev => [...prev, echoItem])
       setView('gallery')
+    } else if (result && result.type === 'CONDUCT_VIEW') {
+      setItems(prev => [...prev, echoItem])
+      setView('conduct')
     } else if (result) {
       setItems(prev => [...prev, echoItem, result])
     } else {
@@ -176,6 +171,8 @@ export default function App() {
         <AsciiWorld onReturn={() => setView('terminal')} />
       ) : view === 'gallery' ? (
         <Testimonials onReturn={() => setView('terminal')} />
+      ) : view === 'conduct' ? (
+        <Conduct onReturn={() => setView('terminal')} />
       ) : (
         <>
           <div className="scanlines" aria-hidden="true" />

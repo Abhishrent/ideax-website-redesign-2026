@@ -18,24 +18,23 @@ export function executeCommand(rawCommand, { history, onRunCommand }) {
       return {
         type: 'HELP',
         rows: [
-          ['register', 'how to sign up'],
-          ['discord', 'join the community server'],
+          ['home', 'return to the home screen'],
           ['about', 'what MBMC IdeaX actually is'],
           ['participation', 'eligibility & team requirements'],
           ['tracks', 'list the 5 problem tracks'],
           ['tracks <id>', 'detail on one track (climate / cybersec / egov / transport / fintech)'],
-          ['timeline', 'registration + event dates'],
-          ['prizes', 'prize breakdown'],
-          ['conduct', 'code of conduct & hackathon rules'],
           ['faq', 'frequently asked questions'],
+          ['conduct', 'code of conduct & hackathon rules'],
+          ['hall of fame', 'visit the sponsor hall of fame'],
+          ['recap', 'browse past hackathon recaps (2023-2025)'],
+          ['prizes', 'prize breakdown'],
+          ['timeline', 'registration + event dates'],
           ['countdown', 'time remaining until doors open'],
+          ['register', 'how to sign up'],
           ['contact', 'email + phone for the organizing team'],
           ['discord', 'join the community server'],
           ['testimonials', 'what past participants say'],
           ['gallery', 'visual testimonial gallery'],
-          ['recap', 'browse past hackathon recaps (2023-2025)'],
-          ['hall', 'visit the sponsor hall of fame'],
-          ['home', 'return to the home screen'],
           ['ls', 'list files in this directory'],
           ['cat <file>', 'print a file, e.g. cat prizes.md'],
           ['fastfetch', 'replay the splash screen'],
@@ -71,7 +70,7 @@ export function executeCommand(rawCommand, { history, onRunCommand }) {
     case 'conduct':
     case 'coc':
     case 'code-of-conduct':
-      return { type: 'CONDUCT' }
+      return { type: 'CONDUCT_VIEW' }
 
     case 'faq':
       return { type: 'FAQ' }

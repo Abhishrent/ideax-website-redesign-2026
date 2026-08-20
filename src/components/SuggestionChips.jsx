@@ -2,22 +2,16 @@ import React from 'react'
 
 export default function SuggestionChips({ onRunCommand }) {
   const chips = [
+    { label: '$ home', cmd: 'home' },
     { label: '$ about', cmd: 'about' },
     { label: '$ participation', cmd: 'participation' },
-    { label: '$ home', cmd: 'home' },
-    { label: '$ help', cmd: 'help' },
     { label: '$ tracks', cmd: 'tracks' },
-    { label: '$ timeline', cmd: 'timeline' },
-    { label: '$ register', cmd: 'register' },
-    { label: '$ prizes', cmd: 'prizes' },
-    { label: '$ conduct', cmd: 'conduct' },
     { label: '$ faq', cmd: 'faq' },
-    { label: '$ countdown', cmd: 'countdown' },
+    { label: '$ conduct', cmd: 'conduct' },
+    { label: '$ hall of fame', cmd: 'halloffame' },
     { label: '$ recap', cmd: 'recap' },
-    { label: '$ discord', cmd: 'discord' },
-    { label: '$ testimonials', cmd: 'testimonials' },
-    { label: '$ gallery', cmd: 'gallery' },
-    { label: '$ hall', cmd: 'hall' }
+    { label: '$ prizes', cmd: 'prizes' },
+    { label: '$ timeline', cmd: 'timeline' },
   ]
 
   return (
