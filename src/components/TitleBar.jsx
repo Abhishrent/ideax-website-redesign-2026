@@ -24,7 +24,9 @@ export default function TitleBar({ onClear, onFetch, onFocus }) {
         />
       </div>
       <div className="tab-label">guest@ideax: ~</div>
-      <div className="titlebar-right">ideax_2026.term · 48:00:00 build window</div>
+      <div className="titlebar-right">
+        <span className="titlebar-info">ideax_2026.term</span>
+      </div>
     </div>
   )
 }

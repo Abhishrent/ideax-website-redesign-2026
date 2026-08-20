@@ -17,15 +17,18 @@ export function executeCommand(rawCommand, { history, onRunCommand }) {
       return {
         type: 'HELP',
         rows: [
+          ['register', 'how to sign up'],
+          ['discord', 'join the community server'],
           ['about', 'what MBMC IdeaX actually is'],
+          ['participation', 'eligibility & team requirements'],
           ['tracks', 'list the 5 problem tracks'],
           ['tracks <id>', 'detail on one track (climate / cybersec / egov / transport / fintech)'],
           ['timeline', 'registration + event dates'],
           ['prizes', 'prize breakdown'],
+          ['conduct', 'code of conduct & hackathon rules'],
+          ['faq', 'frequently asked questions'],
           ['countdown', 'time remaining until doors open'],
-          ['register', 'how to sign up'],
           ['contact', 'email + phone for the organizing team'],
-          ['discord', 'join the community server'],
           ['ls', 'list files in this directory'],
           ['cat <file>', 'print a file, e.g. cat prizes.md'],
           ['fastfetch', 'replay the splash screen'],
@@ -36,6 +39,10 @@ export function executeCommand(rawCommand, { history, onRunCommand }) {
 
     case 'about':
       return { type: 'ABOUT' }
+
+    case 'participation':
+    case 'eligibility':
+      return { type: 'PARTICIPATION' }
 
     case 'tracks': {
       if (arg) {
@@ -53,6 +60,14 @@ export function executeCommand(rawCommand, { history, onRunCommand }) {
 
     case 'prizes':
       return { type: 'PRIZES' }
+
+    case 'conduct':
+    case 'coc':
+    case 'code-of-conduct':
+      return { type: 'CONDUCT' }
+
+    case 'faq':
+      return { type: 'FAQ' }
 
     case 'countdown': {
       return {
@@ -80,7 +95,7 @@ export function executeCommand(rawCommand, { history, onRunCommand }) {
       if (arg === 'tracks' || arg === 'tracks/') {
         return { type: 'TEXT', text: TRACKS.map(t => t.file).join('  '), cls: 'accent2' }
       }
-      return { type: 'TEXT', text: 'about.md  contact.md  prizes.md  register.sh  timeline.log  tracks/', cls: 'accent2' }
+      return { type: 'TEXT', text: 'about.md  participation.md  tracks/  timeline.log  prizes.md  code-of-conduct.md  faq.md  register.sh  contact.md', cls: 'accent2' }
     }
 
     case 'cat': {
@@ -99,8 +114,11 @@ export function executeCommand(rawCommand, { history, onRunCommand }) {
       
       switch (cleanArg) {
         case 'about.md': return { type: 'ABOUT' }
+        case 'participation.md': return { type: 'PARTICIPATION' }
         case 'timeline.log': return { type: 'TIMELINE', items: getDynamicTimeline() }
         case 'prizes.md': return { type: 'PRIZES' }
+        case 'code-of-conduct.md': return { type: 'CONDUCT' }
+        case 'faq.md': return { type: 'FAQ' }
         case 'register.sh': return { type: 'REGISTER' }
         case 'contact.md': return { type: 'CONTACT' }
         default:

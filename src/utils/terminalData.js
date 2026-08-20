@@ -33,6 +33,8 @@ export const TRACKS = [
 
 export const TARGET_DATE = new Date('2026-10-02T00:00:00+05:45').getTime()
 export const DEADLINE_DATE = new Date('2026-09-01T23:59:59+05:45').getTime()
+export const ONLINE_START_DATE = new Date('2026-09-06T00:00:00+05:45').getTime()
+export const ONLINE_END_DATE = new Date('2026-09-13T23:59:59+05:45').getTime()
 export const JUDGING_START_DATE = new Date('2026-10-04T17:00:00+05:45').getTime()
 export const EVENT_END_DATE = new Date('2026-10-04T23:59:59+05:45').getTime()
 
@@ -42,7 +44,7 @@ export function getDynamicTimeline() {
   return [
     {
       date: 'now',
-      desc: 'Registration opens, apply solo or as a team, completely free.',
+      desc: 'Registration opens, apply as a team, completely free.',
       tag: now < DEADLINE_DATE ? '[ONGOING]' : '[PASSED]',
       cls: now < DEADLINE_DATE ? 'ok' : 'dim'
     },
@@ -51,6 +53,12 @@ export function getDynamicTimeline() {
       desc: 'Registration closes, last day to lock your team in.',
       tag: now < DEADLINE_DATE ? '[UPCOMING]' : '[PASSED]',
       cls: now < DEADLINE_DATE ? 'warn' : 'dim'
+    },
+    {
+      date: 'sep 06–13 2026',
+      desc: 'Online Round',
+      tag: now < ONLINE_START_DATE ? '[UPCOMING]' : (now <= ONLINE_END_DATE ? '[ONGOING]' : '[PASSED]'),
+      cls: now < ONLINE_START_DATE ? 'warn' : (now <= ONLINE_END_DATE ? 'ok' : 'dim')
     },
     {
       date: 'oct 02 2026',
@@ -76,6 +84,7 @@ export function getDynamicTimeline() {
 export const TIMELINE = getDynamicTimeline()
 
 export const COMMANDS = [
-  'help', 'about', 'tracks', 'timeline', 'prizes', 'register', 'contact', 'discord', 'countdown',
-  'whoami', 'sudo', 'clear', 'ls', 'cat', 'fastfetch', 'neofetch', 'date', 'echo', 'history', 'exit', 'logout'
+  'help', 'about', 'participation', 'tracks', 'timeline', 'prizes', 'conduct', 'coc', 'faq',
+  'register', 'contact', 'discord', 'countdown', 'whoami', 'sudo', 'clear', 'ls', 'cat',
+  'fastfetch', 'neofetch', 'date', 'echo', 'history', 'exit', 'logout'
 ]

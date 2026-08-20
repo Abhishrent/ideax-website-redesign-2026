@@ -147,15 +147,18 @@ body.reduced-motion .app {
 
 .titlebar-right {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   color: var(--faint);
   font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
+
 @media (max-width: 520px) {
-  .titlebar-right { display: none; }
+  .titlebar-info { display: none; }
 }
 
 /* ---------------- output pane ---------------- */
@@ -277,6 +280,150 @@ body.reduced-motion .app {
 .card p { margin: 0; color: var(--dim); font-size: 13px; }
 .card .meta { margin-top: 8px; color: var(--accent4); font-size: 12px; }
 
+/* ---------------- register cta card ---------------- */
+
+.register-cta-card {
+  margin: 14px 0;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  background: linear-gradient(135deg, rgba(14, 24, 48, 0.95) 0%, rgba(10, 18, 38, 0.95) 100%);
+  padding: 16px 18px;
+  border-radius: 6px;
+  box-shadow: 0 0 24px rgba(37, 99, 255, 0.18), inset 0 0 12px rgba(56, 189, 248, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.register-cta-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--accent4), var(--accent));
+}
+
+.register-cta-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #34d399;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #34d399;
+  animation: pulseDot 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.register-cta-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent4);
+  text-transform: uppercase;
+}
+
+.register-cta-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  letter-spacing: 0.05em;
+}
+
+.register-cta-desc {
+  margin: 0 0 14px 0;
+  color: var(--text);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.highlight-text {
+  color: var(--accent4);
+  font-weight: 700;
+}
+
+.register-cta-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.register-now-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #2563ff 0%, #38bdf8 100%);
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  border-radius: 4px;
+  text-decoration: none;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.register-now-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.7);
+  text-decoration: none;
+}
+
+.discord-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #5865F2 0%, #7289da 100%);
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  border-radius: 4px;
+  text-decoration: none;
+  box-shadow: 0 0 16px rgba(88, 101, 242, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.discord-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 24px rgba(88, 101, 242, 0.7);
+  text-decoration: none;
+}
+
+.register-secondary-btn {
+  background: transparent;
+  border: 1px dashed var(--accent3);
+  color: var(--accent4);
+  padding: 7px 14px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.register-secondary-btn:hover {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: var(--accent4);
+  color: #ffffff;
+}
+
 /* ---------------- suggestion chips ---------------- */
 .chips {
   flex: 0 0 auto;
@@ -307,6 +454,34 @@ body.reduced-motion .app {
 .chips button:hover {
   border-color: var(--accent4);
   color: var(--text);
+}
+
+.chips button.chip-primary {
+  background: linear-gradient(135deg, rgba(37, 99, 255, 0.25) 0%, rgba(56, 189, 248, 0.25) 100%);
+  border: 1px solid var(--accent5);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+.chips button.chip-primary:hover {
+  background: linear-gradient(135deg, #2563ff 0%, #38bdf8 100%);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
+  color: #ffffff;
+}
+
+.chips button.chip-secondary {
+  background: linear-gradient(135deg, rgba(88, 101, 242, 0.25) 0%, rgba(114, 137, 218, 0.25) 100%);
+  border: 1px solid #7289da;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(88, 101, 242, 0.2);
+}
+
+.chips button.chip-secondary:hover {
+  background: linear-gradient(135deg, #5865F2 0%, #7289da 100%);
+  box-shadow: 0 0 16px rgba(88, 101, 242, 0.5);
+  color: #ffffff;
 }
 
 /* ---------------- input line ---------------- */

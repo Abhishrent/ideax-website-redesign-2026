@@ -1,61 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import AsciiCanvas from './AsciiCanvas'
-
-function CountdownItem({ targetDate, deadlineDate, subText, countdownText, deadlineText }) {
-  const [now, setNow] = useState(Date.now())
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setNow(Date.now())
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  if (!targetDate) {
-    return (
-      <div className="line block">
-        <div>
-          <span className="accent">{countdownText}</span>{' '}
-          <span className="dim">{subText}</span>
-        </div>
-        {deadlineText && <div className="faint">{deadlineText}</div>}
-      </div>
-    )
-  }
-
-  const diff = targetDate - now
-  if (diff <= 0) {
-    return (
-      <div className="line block">
-        <span className="accent">[LIVE]</span> the build window is open. good luck.
-      </div>
-    )
-  }
-
-  const d = Math.floor(diff / 86400000)
-  const h = Math.floor((diff % 86400000) / 3600000)
-  const m = Math.floor((diff % 3600000) / 60000)
-  const s = Math.floor((diff % 60000) / 1000)
-
-  const ddiff = deadlineDate - now
-  let computedDeadlineText = ''
-  if (ddiff > 0) {
-    const dd = Math.floor(ddiff / 86400000)
-    computedDeadlineText = `registration closes in ~${dd} days (sep 01 2026).`
-  } else {
-    computedDeadlineText = 'registration window has closed.'
-  }
-
-  return (
-    <div className="line block">
-      <div>
-        <span className="accent">T-minus {d}d {h}h {m}m {s}s</span>{' '}
-        <span className="dim">{subText}</span>
-      </div>
-      {computedDeadlineText && <div className="faint">{computedDeadlineText}</div>}
-    </div>
-  )
-}
 
 export default function OutputPane({ items, onRunCommand, outputRef, onFocusInput }) {
 
@@ -131,11 +75,30 @@ export default function OutputPane({ items, onRunCommand, outputRef, onFocusInpu
             <div className="card">
               <h3>about.md</h3>
               <p>
-                <span className="strong">MBMC IdeaX</span> is a 48-hour, in-person technology hackathon organized by Madan Bhandari Memorial College in Kathmandu, Nepal. Teams get two days and two nights to design, build, and ship real solutions across five national-priority problem tracks.
+                <span className="strong">MBMC IdeaX 2026</span> is a national technology hackathon organized by Madan Bhandari Memorial College in Kathmandu, Nepal. Registration opened on <span className="strong">28th Shrawan 2083 (13th Aug)</span> and closes on <span className="strong">16th Bhadra (1st Sept)</span>. The <span className="strong">Online Round</span> runs from <span className="strong">21st–28th Bhadra (6th–13th Sept)</span>, followed by the <span className="strong">Final On-Site Hackathon Event</span> from <span className="strong">16th–18th Ashoj (2nd–4th Oct)</span>. Participants will develop innovative technology solutions across five problem tracks: Climate Change, Resilience &amp; Sustainability; Cyber Security &amp; Digital Trust; E-Governance &amp; Smart Public Services; Smart Urban Transport &amp; Road Safety; and FinTech &amp; Digital Financial Innovation.
               </p>
-              <p style={{ marginTop: '8px' }}>
-                It begins <span className="strong">2nd October 2026</span>. Registration closes <span className="strong">1st September 2026</span>. Participation is free, teams are encouraged but not required, and every track winner takes home cash prizes plus a shot at mentorship and incubation.
+            </div>
+          </div>
+        )
+
+      case 'PARTICIPATION':
+        return (
+          <div key={idx} className="line block">
+            <div className="card">
+              <h3>participation.md</h3>
+              <p className="strong" style={{ fontSize: '1.05em', color: 'var(--accent4)' }}>
+                Why participate in IdeaX?
               </p>
+              <ul style={{ margin: '8px 0 8px 18px', padding: 0, color: 'var(--dim)' }}>
+                <li>Solve real-world challenges aligned with national priorities.</li>
+                <li>Work with experienced mentors, judges, and industry leaders.</li>
+                <li>Build innovative AI-powered and technology-driven solutions.</li>
+                <li>Compete on a nationally recognized innovation platform.</li>
+                <li>Expand professional networks with startups, academia, government, and industry.</li>
+                <li>Receive mentorship, recognition, prizes, and potential incubation opportunities.</li>
+                <li>Showcase technical excellence and entrepreneurial thinking.</li>
+              </ul>
+              <div className="meta">&gt; Cost: Rs. 0 (100% Free) &middot; Mentorship &amp; Incubation Opportunities</div>
             </div>
           </div>
         )
@@ -230,16 +193,149 @@ export default function OutputPane({ items, onRunCommand, outputRef, onFocusInpu
           </div>
         )
 
-      case 'COUNTDOWN':
+      case 'CONDUCT':
         return (
-          <CountdownItem
-            key={idx}
-            targetDate={item.targetDate}
-            deadlineDate={item.deadlineDate}
-            subText={item.subText}
-            countdownText={item.countdownText}
-            deadlineText={item.deadlineText}
-          />
+          <div key={idx} className="line block">
+            <div className="card">
+              <h3>code-of-conduct.md</h3>
+              <p>
+                At <span className="strong">IdeaX</span>, we believe in building not only the future of technology and innovation but also a community rooted in respect, inclusivity, and collaboration. As organizers, it is our responsibility to ensure a safe, welcoming, and empowering environment for all participants—especially those from underrepresented or marginalized backgrounds.
+              </p>
+
+              <h4 style={{ margin: '14px 0 6px 0', color: 'var(--accent4)' }}>Scope of Application</h4>
+              <p>Applies to all participants, mentors, sponsors, partners, volunteers, judges, and anyone affiliated with IdeaX across all official online and physical spaces.</p>
+
+              <h4 style={{ margin: '14px 0 6px 0', color: 'var(--accent4)' }}>Our Commitment</h4>
+              <p>IdeaX is committed to providing a harassment-free and inclusive experience for everyone, regardless of gender identity, sexual orientation, disability or health condition, age, or technological background.</p>
+
+              <h4 style={{ margin: '14px 0 6px 0', color: 'var(--accent4)' }}>Expected Behaviour</h4>
+              <ul style={{ margin: '4px 0 8px 18px', padding: 0, color: 'var(--dim)' }}>
+                <li>Be respectful of others' opinions, work, and personal space.</li>
+                <li>Use inclusive language and maintain professionalism at all times.</li>
+                <li>Embrace diverse ideas and interdisciplinary collaboration.</li>
+                <li>Respect event schedules, deadlines, and community guidelines.</li>
+                <li>Seek consent before photographing or recording others.</li>
+              </ul>
+
+              <h4 style={{ margin: '14px 0 6px 0', color: 'var(--accent4)' }}>Prohibited Conduct</h4>
+              <ul style={{ margin: '4px 0 8px 18px', padding: 0, color: 'var(--dim)' }}>
+                <li>Harassment in any form, including verbal abuse or unwelcome advances.</li>
+                <li>Offensive or discriminatory speech, visuals, or gestures.</li>
+                <li>Plagiarism or misrepresentation of work.</li>
+                <li>Intoxication or possession of illegal substances on event premises.</li>
+                <li>Sabotaging, disrupting, or intimidating fellow participants.</li>
+              </ul>
+
+              <h4 style={{ margin: '14px 0 6px 0', color: 'var(--accent4)' }}>Participation &amp; Team Guidelines</h4>
+              <ul style={{ margin: '4px 0 8px 18px', padding: 0, color: 'var(--dim)' }}>
+                <li>Open to students and young innovators between <strong>18 and 26 years of age</strong>.</li>
+                <li>Teams must consist of <strong>2 to 4 members</strong> (interdisciplinary teams encouraged).</li>
+                <li>Each individual may participate in only one team.</li>
+                <li>Valid photo ID (e.g. student ID) required upon request.</li>
+              </ul>
+
+              <h4 style={{ margin: '14px 0 6px 0', color: 'var(--accent4)' }}>Project &amp; Submission Guidelines</h4>
+              <ul style={{ margin: '4px 0 8px 18px', padding: 0, color: 'var(--dim)' }}>
+                <li>All submissions must be initiated and completed during the official event timeline.</li>
+                <li>No code or final assets may be created beforehand (sketching &amp; planning allowed).</li>
+                <li>Projects must respect ethical standards and avoid violence or hate speech.</li>
+                <li>At least one team member must present during the final showcase.</li>
+              </ul>
+
+              <h4 style={{ margin: '14px 0 6px 0', color: 'var(--accent4)' }}>Reporting Concerns &amp; Consequences</h4>
+              <p>Report issues immediately to organizing committee members (recognized by official IdeaX badges &amp; T-shirts). Violations may result in verbal warnings, disqualification, or removal.</p>
+
+              <div className="meta" style={{ marginTop: '12px' }}>
+                Need Assistance? Krishna Adhikari: <a href="tel:+9779842362679">9842362679</a> &middot; Krijal Paneru: <a href="tel:+9779744289830">9744289830</a>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 'FAQ':
+        return (
+          <div key={idx} className="line block">
+            <div className="card">
+              <h3>faq.md</h3>
+
+              <p className="strong" style={{ color: 'var(--accent4)' }}>What is MBMC IdeaX 2026?</p>
+              <p style={{ marginBottom: '10px' }}>MBMC IdeaX 2026 is a national-level technology hackathon organized by Madan Bhandari Memorial College. It brings together innovators, developers, and students over 48 high-energy hours to build real-world tech solutions.</p>
+
+              <p className="strong" style={{ color: 'var(--accent4)' }}>When is the hackathon?</p>
+              <p style={{ marginBottom: '10px' }}>The Online Round runs 21st–28th Bhadra (6th–13th Sept), and the Final On-Site Event runs 16th–18th Ashoj (2nd–4th Oct 2026).</p>
+
+              <p className="strong" style={{ color: 'var(--accent4)' }}>What is the registration deadline?</p>
+              <p style={{ marginBottom: '10px' }}>Registration closes on 16th Bhadra (1st September 2026).</p>
+
+              <p className="strong" style={{ color: 'var(--accent4)' }}>Is the hackathon online or offline?</p>
+              <p style={{ marginBottom: '10px' }}>MBMC IdeaX 2026 features an Online Round (6th–13th Sept) followed by an in-person Final Event (2nd–4th Oct) at Madan Bhandari Memorial College in Kathmandu, Nepal.</p>
+
+              <p className="strong" style={{ color: 'var(--accent4)' }}>How long is the hackathon?</p>
+              <p style={{ marginBottom: '10px' }}>The hackathon runs continuously for a duration of 48 hours.</p>
+
+              <p className="strong" style={{ color: 'var(--accent4)' }}>What are the problem tracks?</p>
+              <p style={{ marginBottom: '10px' }}>The five official problem tracks are: 1) Climate Change, Resilience &amp; Sustainability, 2) Cyber Security &amp; Digital Trust, 3) E-Governance &amp; Smart Public Services, 4) Smart Urban Transport &amp; Road Safety, and 5) FinTech &amp; Digital Financial Innovation.</p>
+
+              <p className="strong" style={{ color: 'var(--accent4)' }}>Where is the event held?</p>
+              <p style={{ marginBottom: '10px' }}>The event is held at Madan Bhandari Memorial College, Kathmandu, Nepal.</p>
+
+              <p className="strong" style={{ color: 'var(--accent4)' }}>What are the prizes?</p>
+              <p style={{ marginBottom: '10px' }}>Each track winner receives a cash reward of Rs. 10,000, with a total prize pool of Rs. 111,111 (including Rs. 50,000 for the overall grand winner).</p>
+
+              <p className="strong" style={{ color: 'var(--accent4)' }}>How do I register?</p>
+              <p style={{ marginBottom: '10px' }}>You can register directly through our official website registration link or via our official Devfolio page.</p>
+
+              <p className="strong" style={{ color: 'var(--accent4)' }}>Do I need to have a team to participate?</p>
+              <p style={{ marginBottom: '10px' }}>Teams are encouraged but not required. You can register individually or with a team of up to 4 members.</p>
+
+              <p className="strong" style={{ color: 'var(--accent4)' }}>Are there any registration or participation fees?</p>
+              <p>No! MBMC IdeaX 2026 is 100% free of cost with zero registration or participation fees.</p>
+            </div>
+          </div>
+        )
+
+      case 'REGISTER_BANNER':
+        return (
+          <div key={idx} className="line block register-cta-card">
+            <div className="register-cta-content">
+              <div className="register-cta-header">
+                <span className="pulse-dot" />
+                <span className="register-cta-title">REGISTRATION IS LIVE</span>
+                <span className="register-cta-badge">FREE ENTRY</span>
+              </div>
+              <p className="register-cta-desc">
+                Ready to innovate, build, and win from the <strong className="highlight-text">Rs. 111,111</strong> prize pool? Reserve your spot now!
+              </p>
+              <div className="register-cta-actions">
+                <a
+                  href="https://forms.gle/cBgYAroPeJeZpxa6A"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="register-now-btn"
+                >
+                  ⚡ REGISTER NOW &rarr;
+                </a>
+                <a
+                  href="https://discord.com/invite/3RctjES2U"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="discord-cta-btn"
+                >
+                  💬 JOIN DISCORD &rarr;
+                </a>
+                <button
+                  type="button"
+                  className="register-secondary-btn"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onRunCommand('register')
+                  }}
+                >
+                  register.sh
+                </button>
+              </div>
+            </div>
+          </div>
         )
 
       case 'REGISTER':
@@ -254,7 +350,7 @@ export default function OutputPane({ items, onRunCommand, outputRef, onFocusInpu
                 Join our official <a href="https://discord.com/invite/3RctjES2U" target="_blank" rel="noopener noreferrer">Discord Server</a> for team-finding, crucial announcements, and all future updates!
               </p>
               <div className="meta">
-                registration closes 1st September 2026 &middot; teams encouraged, not required &middot; solo entries welcome
+                registration closes 16th Bhadra (1st September) &middot; teams encouraged, not required &middot; solo entries welcome
               </div>
             </div>
           </div>
@@ -314,8 +410,9 @@ export default function OutputPane({ items, onRunCommand, outputRef, onFocusInpu
                 <div className="k">Prize Pool</div><div className="v">Rs. 111,111</div>
                 <div className="k">Shell</div><div className="v">register.sh</div>
                 <div className="k">Venue</div><div className="v">Kathmandu, Nepal</div>
-                <div className="k">Deadline</div><div className="v">2026-09-01</div>
-                <div className="k">Event</div><div className="v">2026-10-02 &rarr; 2026-10-04</div>
+                <div className="k">Deadline</div><div className="v">16th Bhadra (1st Sept)</div>
+                <div className="k">Online Rd</div><div className="v">21st–28th Bhadra (6th–13th Sept)</div>
+                <div className="k">Final Event</div><div className="v">16th–18th Ashoj (2nd–4th Oct)</div>
               </div>
               <div className="swatches" aria-hidden="true">
                 <span style={{ background: '#1d4ed8' }} />
