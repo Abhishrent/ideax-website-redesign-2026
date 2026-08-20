@@ -54,3 +54,6 @@ build/
 .Trashes
 Thumbs.db
 ehthumbs.db
+
+# Agent files
+AGENTS.md
