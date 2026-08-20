@@ -10,7 +10,11 @@ import {
   torchCellTexture, tapestryTexture, ceilingTexture, paintCell,
   SPRITE_DEFS,
 } from './textures'
-import { currentRoom, ROOMS, torchGlow as calcTorchGlow } from './museum'
+import { currentRoom, ROOMS, torchGlow as calcTorchGlow, torchFlicker } from './museum'
+
+function cellHeight(museum, x, y) {
+  return (museum.heightGrid[y] && museum.heightGrid[y][x]) || 3.2;
+}
 
 const MAP_CH = {
   1: ["#", "rgba(140,138,155,0.5)"],
@@ -129,7 +133,7 @@ export function render(timeSec, ctx, renderer, player, input, museum, paintingLo
     const { perpDist, side, wallX, cellValue, dirX, dirY, mapX, mapY } = castRay(rayAngle, player, museum);
     renderer.zbuffer[col] = perpDist;
 
-    const wallH = (museum.heightGrid[mapY] && museum.heightGrid[mapY][mapX]) || 3.2;
+    const wallH = cellHeight(museum, mapX, mapY);
     const totalHeight = Math.max(1, Math.min(ROWS * 8, Math.round(wallH * ROWS / (perpDist + 0.0001))));
     const scalePerUnit = totalHeight / wallH;
     const aboveEye = Math.max(0, wallH - EYE_HEIGHT) * scalePerUnit;
@@ -168,9 +172,7 @@ export function render(timeSec, ctx, renderer, player, input, museum, paintingLo
         if (cellValue === 2 && painting && tier) result = paintCell(painting, tier, wallX, rowFrac, brightness);
         else if (cellValue === 3) result = columnTexture(wallX, rowFrac, brightness);
         else if (cellValue === 4) result = windowTexture(wallX, rowFrac, brightness, timeSec);
-        else if (cellValue === 5) result = torchCellTexture(wallX, rowFrac, brightness, timeSec, torchRef, (t, ts) => {
-          return 0.78 + 0.14 * Math.sin(ts * 6.1 + t.phase) + 0.08 * Math.sin(ts * 13.3 + t.phase * 1.7);
-        });
+        else if (cellValue === 5) result = torchCellTexture(wallX, rowFrac, brightness, timeSec, torchRef, torchFlicker);
         else if (cellValue === 6) result = tapestryTexture(wallX, rowFrac, brightness, tapestrySeed);
         else result = stoneWallTexture(wallX, rowFrac, brightness);
         ch = result.ch; colr = result.colr;
@@ -212,7 +214,7 @@ export function render(timeSec, ctx, renderer, player, input, museum, paintingLo
     const spriteH = rowsPerUnit * def.hWorld * sizeMul;
     const spriteW = colsPerUnit * def.wWorld * sizeMul;
 
-    const localH = (museum.heightGrid[Math.floor(s.y)] && museum.heightGrid[Math.floor(s.y)][Math.floor(s.x)]) || 3.2;
+    const localH = cellHeight(museum, Math.floor(s.x), Math.floor(s.y));
     const floorRow = horizon + Math.min(localH, EYE_HEIGHT) * rowsPerUnit;
     const ceilRow = horizon - Math.max(0, localH - EYE_HEIGHT) * rowsPerUnit;
 

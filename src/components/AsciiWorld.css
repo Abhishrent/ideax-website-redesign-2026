@@ -16,27 +16,6 @@
   display: block;
 }
 
-.ascii-world-crt {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.0) 0px,
-      rgba(0,0,0,0.08) 1px,
-      rgba(0,0,0,0.0) 2px
-    );
-  mix-blend-mode: multiply;
-}
-
-.ascii-world-vignette {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, rgba(13,15,20,0) 45%, rgba(6,7,10,0.78) 100%);
-}
-
 .ascii-world-crosshair {
   position: absolute;
   top: 50%;
@@ -130,23 +109,4 @@
 
 @keyframes ascii-world-blink {
   50% { opacity: 0; }
-}
-
-.ascii-world-return {
-  position: absolute;
-  bottom: 24px;
-  left: 24px;
-  background: none;
-  border: 1px solid #4a4a5c;
-  color: #9a97ae;
-  font-family: inherit;
-  font-size: 12px;
-  padding: 6px 14px;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.ascii-world-return:hover {
-  color: #e8e2f5;
-  border-color: #d9a544;
 }

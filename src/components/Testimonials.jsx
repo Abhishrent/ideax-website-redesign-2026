@@ -24,8 +24,8 @@ export default function Testimonials({ onReturn }) {
 
   return (
     <div className="testimonials-stage">
-      <div className="testimonials-crt" />
-      <div className="testimonials-vignette" />
+    <div className="crt-overlay" />
+    <div className="fullscreen-vignette" />
 
       <div className="testimonials-container">
         <h1 className="testimonials-title">Testimonials</h1>
@@ -80,7 +80,7 @@ export default function Testimonials({ onReturn }) {
         </div>
 
         {onReturn && (
-          <button className="testimonials-return" onClick={onReturn}>
+          <button className="return-btn" onClick={onReturn}>
             &#x2190; back to terminal
           </button>
         )}

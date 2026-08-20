@@ -104,8 +104,8 @@ export default function AsciiWorld({ onReturn }) {
   return (
     <div className="ascii-world-stage">
       <canvas ref={canvasRef} className="ascii-world-canvas" />
-      <div className="ascii-world-crt" />
-      <div className="ascii-world-vignette" />
+      <div className="crt-overlay" />
+      <div className="fullscreen-vignette" />
       <div className="ascii-world-crosshair">+</div>
       <div className="ascii-world-hud">
         <div className="ascii-world-hud-corner ascii-world-hud-tl">
@@ -130,7 +130,7 @@ export default function AsciiWorld({ onReturn }) {
             <div className="ascii-world-blink">[ click to step inside ]</div>
           </div>
           {onReturn && (
-            <button className="ascii-world-return" onClick={onReturn}>
+            <button className="return-btn" onClick={onReturn}>
               ← back to terminal
             </button>
           )}

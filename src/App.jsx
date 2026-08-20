@@ -130,7 +130,6 @@ export default function App() {
     const result = executeCommand(raw, { history, onRunCommand: handleRunCommand })
 
     if (result && result.type === 'CLEAR') {
-      setItems(getInitialLandingItems())
       setItems([])
     } else if (result && result.type === 'HOME') {
       setHistory([])
@@ -151,7 +150,7 @@ export default function App() {
   }
 
   const handleClearTerminal = () => {
-    setItems(getInitialLandingItems())
+    setItems([])
     focusInput()
   }
 
