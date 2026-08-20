@@ -73,8 +73,6 @@ export function getDynamicTimeline() {
   ]
 }
 
-export const TIMELINE = getDynamicTimeline()
-
 export const COMMANDS = [
   'help', 'about', 'tracks', 'timeline', 'prizes', 'register', 'contact', 'discord', 'countdown',
   'whoami', 'sudo', 'clear', 'ls', 'cat', 'fastfetch', 'neofetch', 'date', 'echo', 'history', 'exit', 'logout'

@@ -4,10 +4,13 @@ import OutputPane from './components/OutputPane'
 import SuggestionChips from './components/SuggestionChips'
 import CommandLine from './components/CommandLine'
 import LoadingIntro from './components/LoadingIntro'
+import AsciiWorld from './components/AsciiWorld'
+import Testimonials from './components/Testimonials'
 import { executeCommand } from './utils/commandHandler'
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(true)
+  const [view, setView] = useState('terminal')
   const [items, setItems] = useState([])
   const [history, setHistory] = useState([])
   const outputRef = useRef(null)
@@ -19,10 +22,7 @@ export default function App() {
     }
   }
 
-  // Boot sequence
-  useEffect(() => {
-    if (showIntro) return
-
+  const runBootSequence = (onDone) => {
     let isCancelled = false
     let timeoutIds = []
 
@@ -33,7 +33,6 @@ export default function App() {
       document.body.classList.add('reduced-motion')
     }
 
-    // Remove boot class after the CRT flicker animation completes (~900ms)
     const bootTimer = setTimeout(() => {
       if (!isCancelled) document.body.classList.remove('boot')
     }, 950)
@@ -65,7 +64,10 @@ export default function App() {
           { type: 'TEXT', text: "type 'help' to see available commands, or click a suggestion below.", cls: 'dim' },
           { type: 'BLANK' }
         ])
-        const t = setTimeout(focusInput, 50)
+        const t = setTimeout(() => {
+          focusInput()
+          if (onDone) onDone()
+        }, 50)
         timeoutIds.push(t)
       }
     }
@@ -75,6 +77,27 @@ export default function App() {
     return () => {
       isCancelled = true
       timeoutIds.forEach(id => clearTimeout(id))
+    }
+  }
+
+  const bootCleanupRef = useRef(null)
+
+  const startBootSequence = () => {
+    if (bootCleanupRef.current) {
+      bootCleanupRef.current()
+    }
+    bootCleanupRef.current = runBootSequence()
+  }
+
+  // Boot sequence
+  useEffect(() => {
+    if (showIntro) return
+    startBootSequence()
+    return () => {
+      if (bootCleanupRef.current) {
+        bootCleanupRef.current()
+        bootCleanupRef.current = null
+      }
     }
   }, [showIntro])
 
@@ -91,6 +114,15 @@ export default function App() {
 
     if (result && result.type === 'CLEAR') {
       setItems([])
+    } else if (result && result.type === 'HOME') {
+      setHistory([])
+      startBootSequence()
+    } else if (result && result.type === 'MUSEUM') {
+      setItems(prev => [...prev, echoItem])
+      setView('museum')
+    } else if (result && result.type === 'GALLERY') {
+      setItems(prev => [...prev, echoItem])
+      setView('gallery')
     } else if (result) {
       setItems(prev => [...prev, echoItem, result])
     } else {
@@ -105,8 +137,9 @@ export default function App() {
     focusInput()
   }
 
-  const handleReplayFetch = () => {
-    handleRunCommand('fastfetch')
+  const handleHome = () => {
+    setHistory([])
+    startBootSequence()
   }
 
   const handleFocusInput = () => {
@@ -122,35 +155,43 @@ export default function App() {
 
   return (
     <>
-      <div className="scanlines" aria-hidden="true" />
-      <div className="vignette" aria-hidden="true" />
-
-      {showIntro ? (
-        <LoadingIntro onComplete={() => setShowIntro(false)} />
+      {view === 'museum' ? (
+        <AsciiWorld onReturn={() => setView('terminal')} />
+      ) : view === 'gallery' ? (
+        <Testimonials onReturn={() => setView('terminal')} />
       ) : (
-        <div className="app" id="app">
-          <TitleBar
-            onClear={handleClearTerminal}
-            onFetch={handleReplayFetch}
-            onFocus={handleFocusInput}
-          />
+        <>
+          <div className="scanlines" aria-hidden="true" />
+          <div className="vignette" aria-hidden="true" />
 
-          <OutputPane
-            items={items}
-            onRunCommand={handleRunCommand}
-            outputRef={outputRef}
-            onFocusInput={handleFocusInput}
-          />
+          {showIntro ? (
+            <LoadingIntro onComplete={() => setShowIntro(false)} />
+          ) : (
+            <div className="app" id="app">
+              <TitleBar
+                onClear={handleClearTerminal}
+                onHome={handleHome}
+                onFocus={handleFocusInput}
+              />
 
-          <SuggestionChips onRunCommand={handleRunCommand} />
+              <OutputPane
+                items={items}
+                onRunCommand={handleRunCommand}
+                outputRef={outputRef}
+                onFocusInput={handleFocusInput}
+              />
 
-          <CommandLine
-            inputRef={inputRef}
-            history={history}
-            onRunCommand={handleRunCommand}
-            onAppendText={handleAppendText}
-          />
-        </div>
+              <SuggestionChips onRunCommand={handleRunCommand} />
+
+              <CommandLine
+                inputRef={inputRef}
+                history={history}
+                onRunCommand={handleRunCommand}
+                onAppendText={handleAppendText}
+              />
+            </div>
+          )}
+        </>
       )}
     </>
   )
