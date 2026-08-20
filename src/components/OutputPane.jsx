@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import AsciiCanvas from './AsciiCanvas'
+import { testimonials } from '../utils/testimonialsData'
 
 function CountdownItem({ targetDate, deadlineDate, subText, countdownText, deadlineText }) {
   const [now, setNow] = useState(Date.now())
@@ -295,6 +296,97 @@ export default function OutputPane({ items, onRunCommand, outputRef, onFocusInpu
             </div>
           </div>
         )
+
+      case 'TESTIMONIALS':
+        return (
+          <React.Fragment key={idx}>
+            <div className="line dim">$ cat testimonials.log</div>
+            <div className="line block">
+              {testimonials.map((t, i) => (
+                <div key={i} className="card">
+                  <h3>{t.name} <span className="dim">&mdash; {t.role}</span></h3>
+                  <p style={{ fontStyle: 'italic' }}>"{t.quote}"</p>
+                </div>
+              ))}
+            </div>
+            <div className="line faint">type 'gallery' for the full visual experience.</div>
+          </React.Fragment>
+        )
+
+      case 'RECAP_LIST':
+        return (
+          <React.Fragment key={idx}>
+            <div className="line dim">$ ls recaps/</div>
+            <div className="line block table">
+              <div className="row" style={{ marginBottom: '4px' }}>
+                <span className="strong">year</span>
+                <span className="strong">theme</span>
+                <span className="strong">participants</span>
+                <span className="strong">winner</span>
+              </div>
+              {item.recaps.map((r) => (
+                <div key={r.year} className="row">
+                  <button
+                    type="button"
+                    className="cmd-link"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onRunCommand(`recap ${r.year}`)
+                    }}
+                  >
+                    {r.year}
+                  </button>
+                  <span className="dim">{r.theme}</span>
+                  <span>{r.stats.participants || '—'}</span>
+                  <span className="accent2">{r.winner.team}</span>
+                </div>
+              ))}
+            </div>
+            <div className="line faint">type 'recap &lt;year&gt;' for details (e.g. recap 2024).</div>
+          </React.Fragment>
+        )
+
+      case 'RECAP_DETAIL': {
+        const r = item.recap
+        return (
+          <div key={idx} className="line block">
+            <div className="card">
+              <h3>IdeaX {r.year} <span className="dim">&mdash; {r.theme}</span></h3>
+              <div className="kv-grid" style={{ marginTop: '10px' }}>
+                <div className="k">participants</div><div className="v">{r.stats.participants || '—'}</div>
+                <div className="k">teams</div><div className="v">{r.stats.teams || '—'}</div>
+                <div className="k">tracks</div><div className="v">{r.stats.tracks || '—'}</div>
+                <div className="k">submissions</div><div className="v">{r.stats.submissions || '—'}</div>
+              </div>
+            </div>
+            <div className="card">
+              <h3>highlights</h3>
+              <ul style={{ margin: '6px 0 0 16px', padding: 0 }}>
+                {r.highlights.map((h, i) => (
+                  <li key={i} className="dim" style={{ marginBottom: '4px' }}>{h}</li>
+                ))}
+              </ul>
+            </div>
+             <div className="card">
+              <h3>winner</h3>
+              <p>
+                <span className="strong">{r.winner.team}</span>
+                {r.winner.project && <span className="dim"> &mdash; {r.winner.project}</span>}
+                {r.winner.track && <span className="faint"> ({r.winner.track})</span>}
+              </p>
+            </div>
+            {r.runnerUp && r.runnerUp.team && (
+              <div className="card">
+                <h3>runner-up</h3>
+                <p>
+                  <span className="strong">{r.runnerUp.team}</span>
+                  {r.runnerUp.project && <span className="dim"> &mdash; {r.runnerUp.project}</span>}
+                </p>
+              </div>
+            )}
+          </div>
+        )
+      }
 
       case 'FASTFETCH':
         return (

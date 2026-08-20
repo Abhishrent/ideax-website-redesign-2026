@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function TitleBar({ onClear, onFetch, onFocus }) {
+export default function TitleBar({ onClear, onHome, onFocus }) {
   return (
     <div className="titlebar">
       <div className="dots">
@@ -12,9 +12,9 @@ export default function TitleBar({ onClear, onFetch, onFocus }) {
         />
         <button
           className="dot dot2"
-          onClick={onFetch}
-          title="replay fastfetch"
-          aria-label="replay system info"
+          onClick={onHome}
+          title="home"
+          aria-label="return to home screen"
         />
         <button
           className="dot dot3"
