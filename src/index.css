@@ -737,3 +737,44 @@ body.reduced-motion .app {
   50% { opacity: 0; }
 }
 
+/* SEO-friendly hidden content for search engines */
+.seo-content {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.seo-content h1,
+.seo-content h2 {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+}
+
+.seo-content p,
+.seo-content ul {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+.seo-content ul {
+  list-style: none;
+}
+
+.seo-content li {
+  margin: 0;
+  padding: 0;
+}
+

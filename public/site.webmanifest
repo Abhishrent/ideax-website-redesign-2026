@@ -1,0 +1,24 @@
+{
+  "name": "MBMC IdeaX 2026",
+  "short_name": "IdeaX 2026",
+  "description": "Nepal's premier national-level hackathon at Madan Bhandari Memorial College. Solve real-world challenges in Climate Tech, Cybersecurity, E-Governance, Smart Transport & FinTech.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#00ff66",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "technology", "events"]
+}

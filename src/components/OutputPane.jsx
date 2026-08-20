@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import AsciiCanvas from './AsciiCanvas'
 import { testimonials } from '../utils/testimonialsData'
 
@@ -9,6 +9,27 @@ export default function OutputPane({ items, onRunCommand, outputRef, onFocusInpu
       outputRef.current.scrollTop = outputRef.current.scrollHeight
     }
   }, [items, outputRef])
+
+  const [countdown, setCountdown] = useState('')
+  useEffect(() => {
+    function updateCountdown() {
+      const target = new Date('2026-09-01T00:00:00')
+      const now = new Date()
+      const diff = target - now
+      if (diff <= 0) {
+        setCountdown('00:00:00')
+        return
+      }
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const h = Math.floor((diff / (1000 * 60 * 60)) % 24)
+      const m = Math.floor((diff / (1000 * 60)) % 60)
+      const s = Math.floor((diff / 1000) % 60)
+      setCountdown(`${d}d ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`)
+    }
+    updateCountdown()
+    const id = setInterval(updateCountdown, 1000)
+    return () => clearInterval(id)
+  }, [])
 
   const handlePaneClick = (e) => {
     const sel = window.getSelection()
@@ -438,7 +459,7 @@ export default function OutputPane({ items, onRunCommand, outputRef, onFocusInpu
                 <div className="k">OS</div><div className="v">MBMC IdeaX 2026</div>
                 <div className="k">Host</div><div className="v">Madan Bhandari Memorial College</div>
                 <div className="k">Kernel</div><div className="v">hackathon-6.2.2026</div>
-                <div className="k">Uptime</div><div className="v">48:00:00 (build window)</div>
+                <div className="k">Countdown</div><div className="v">{countdown} (until Sep 1)</div>
                 <div className="k">Tracks</div><div className="v">5</div>
                 <div className="k">Prize Pool</div><div className="v">Rs. 111,111</div>
                 <div className="k">Shell</div><div className="v">register.sh</div>
@@ -474,6 +495,31 @@ export default function OutputPane({ items, onRunCommand, outputRef, onFocusInpu
       aria-label="terminal output"
     >
       {items.map(renderItem)}
+      
+      {/* SEO-friendly hidden content for search engines */}
+      <div className="seo-content" aria-hidden="true">
+        <h1>MBMC IdeaX 2026 - Nepal's National Hackathon</h1>
+        <h2>About the Event</h2>
+        <p>MBMC IdeaX 2026 is a national-level hackathon organized by Madan Bhandari Memorial College in Kathmandu, Nepal. The event brings together innovators, developers, and students to solve real-world challenges over 48 hours of intensive building and innovation.</p>
+        
+        <h2>Tracks</h2>
+        <ul>
+          <li>Climate Change, Resilience & Sustainability - Build tools for disaster preparedness and sustainable resource management</li>
+          <li>Cyber Security & Digital Trust - Harden digital infrastructure and strengthen trust across systems</li>
+          <li>E-Governance & Smart Public Services - Make public services faster and more transparent through technology</li>
+          <li>Smart Urban Transport & Road Safety - Design solutions for safer, smarter urban mobility</li>
+          <li>FinTech & Digital Financial Innovation - Build next-generation digital financial tools for inclusion</li>
+        </ul>
+        
+        <h2>Timeline</h2>
+        <p>Registration closes September 1st, 2026. Online Round: September 6-13, 2026. Final Event: October 2-4, 2026 at Madan Bhandari Memorial College, Kathmandu.</p>
+        
+        <h2>Prizes</h2>
+        <p>Total prize pool of Rs. 111,111 distributed across winning teams in different tracks.</p>
+        
+        <h2>Register</h2>
+        <p>Join 500+ innovators at IdeaX 2026. Form a team of 2-4 members and register before September 1st. The event is completely free to participate.</p>
+      </div>
     </div>
   )
 }

@@ -1,0 +1,8 @@
+# MBMC IdeaX 2026 - robots.txt
+# https://ideax.mbmc.edu.np
+
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://ideax.mbmc.edu.np/sitemap.xml

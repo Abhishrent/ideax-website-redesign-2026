@@ -1,0 +1,59 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0a"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  
+  <!-- Terminal window decoration -->
+  <rect x="50" y="40" width="1100" height="550" rx="8" fill="#111" stroke="#333" stroke-width="2"/>
+  <rect x="50" y="40" width="1100" height="40" rx="8" fill="#1a1a1a"/>
+  <circle cx="80" cy="60" r="8" fill="#ff5f56"/>
+  <circle cx="110" cy="60" r="8" fill="#ffbd2e"/>
+  <circle cx="140" cy="60" r="8" fill="#27c93f"/>
+  
+  <!-- Terminal prompt -->
+  <text x="80" y="120" font-family="monospace" font-size="24" fill="#666">guest@ideax:~$</text>
+  
+  <!-- Main title -->
+  <text x="80" y="200" font-family="monospace" font-size="64" font-weight="bold" fill="url(#accent)">MBMC IdeaX 2026</text>
+  
+  <!-- Subtitle -->
+  <text x="80" y="280" font-family="monospace" font-size="28" fill="#fff">Nepal's Premier National-Level Hackathon</text>
+  
+  <!-- Details -->
+  <text x="80" y="340" font-family="monospace" font-size="20" fill="#888">Location: Madan Bhandari Memorial College, Kathmandu</text>
+  <text x="80" y="380" font-family="monospace" font-size="20" fill="#888">Duration: 48 Hours of Innovation</text>
+  <text x="80" y="420" font-family="monospace" font-size="20" fill="#888">Prizes: Rs. 111,111</text>
+  
+  <!-- Call to action -->
+  <rect x="80" y="480" width="300" height="50" rx="5" fill="url(#accent)"/>
+  <text x="120" y="512" font-family="monospace" font-size="20" font-weight="bold" fill="#fff">$ register now</text>
+  
+  <!-- Track tags -->
+  <rect x="420" y="480" width="120" height="50" rx="5" fill="#333"/>
+  <text x="440" y="512" font-family="monospace" font-size="14" fill="#3b82f6">climate</text>
+  
+  <rect x="560" y="480" width="120" height="50" rx="5" fill="#333"/>
+  <text x="580" y="512" font-family="monospace" font-size="14" fill="#3b82f6">cybersec</text>
+  
+  <rect x="700" y="480" width="120" height="50" rx="5" fill="#333"/>
+  <text x="720" y="512" font-family="monospace" font-size="14" fill="#3b82f6">egov</text>
+  
+  <rect x="840" y="480" width="120" height="50" rx="5" fill="#333"/>
+  <text x="860" y="512" font-family="monospace" font-size="14" fill="#3b82f6">transport</text>
+  
+  <rect x="980" y="480" width="120" height="50" rx="5" fill="#333"/>
+  <text x="1000" y="512" font-family="monospace" font-size="14" fill="#3b82f6">fintech</text>
+  
+  <!-- Website URL -->
+  <text x="80" y="570" font-family="monospace" font-size="16" fill="#666">ideax.mbmc.edu.np</text>
+</svg>
