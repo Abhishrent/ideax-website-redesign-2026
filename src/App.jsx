@@ -7,6 +7,22 @@ import LoadingIntro from './components/LoadingIntro'
 import AsciiWorld from './components/AsciiWorld'
 import Testimonials from './components/Testimonials'
 import { executeCommand } from './utils/commandHandler'
+import { TRACKS, getDynamicTimeline } from './utils/terminalData'
+
+const getInitialLandingItems = () => [
+  { type: 'TEXT', text: '[ok] mounting /tracks', cls: 'ok' },
+  { type: 'TEXT', text: '[ok] mounting /timeline', cls: 'ok' },
+  { type: 'TEXT', text: '[ok] starting register.service', cls: 'ok' },
+  { type: 'TEXT', text: '[ok] loading fastfetch…', cls: 'ok' },
+  { type: 'BLANK' },
+  { type: 'FASTFETCH' },
+  { type: 'BLANK' },
+  { type: 'REGISTER_BANNER' },
+  { type: 'BLANK' },
+  { type: 'TEXT', text: 'welcome to MBMC IdeaX 2026.', cls: 'strong' },
+  { type: 'TEXT', text: "type 'help' to see available commands, or click a suggestion below.", cls: 'dim' },
+  { type: 'BLANK' }
+]
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(true)
@@ -55,6 +71,8 @@ export default function App() {
         const t = setTimeout(step, reduced ? 0 : 130)
         timeoutIds.push(t)
       } else {
+        setItems(getInitialLandingItems())
+        const t = setTimeout(focusInput, 50)
         setItems(prev => [
           ...prev,
           { type: 'BLANK' },
@@ -113,6 +131,7 @@ export default function App() {
     const result = executeCommand(raw, { history, onRunCommand: handleRunCommand })
 
     if (result && result.type === 'CLEAR') {
+      setItems(getInitialLandingItems())
       setItems([])
     } else if (result && result.type === 'HOME') {
       setHistory([])
@@ -133,7 +152,7 @@ export default function App() {
   }
 
   const handleClearTerminal = () => {
-    setItems([])
+    setItems(getInitialLandingItems())
     focusInput()
   }
 
