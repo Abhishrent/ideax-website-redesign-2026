@@ -171,9 +171,9 @@ export default function App() {
     if (COMMAND_TITLES[cmdName]) {
       document.title = COMMAND_TITLES[cmdName]
       if (window.location.hash !== `#${cmdName}` && cmdName !== 'home') {
-        history.pushState ? window.history.replaceState(null, '', `#${cmdName}`) : window.location.hash = cmdName
+        window.history.replaceState ? window.history.replaceState(null, '', `#${cmdName}`) : (window.location.hash = cmdName)
       } else if (cmdName === 'home') {
-        history.pushState ? window.history.replaceState(null, '', window.location.pathname) : (window.location.hash = '')
+        window.history.replaceState ? window.history.replaceState(null, '', window.location.pathname) : (window.location.hash = '')
       }
     }
 
