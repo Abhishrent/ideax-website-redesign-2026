@@ -20,7 +20,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
+  gap: 24px;
 }
 
 .testimonials-title {
@@ -36,7 +36,7 @@
   font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  margin: -16px 0 0;
+  margin: -14px 0 0;
 }
 
 .testimonials-slider {
@@ -83,19 +83,26 @@
 }
 
 .testimonials-card {
-  background: rgba(30, 32, 42, 0.8);
+  background: rgba(30, 32, 42, 0.85);
   border: 1px solid #2a2c3a;
   border-radius: 4px;
   padding: 28px 32px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
+  height: 360px;
+  box-sizing: border-box;
 }
 
 .testimonials-card-header {
   display: flex;
   align-items: center;
   gap: 14px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+  height: 72px;
+  min-height: 72px;
+  box-sizing: border-box;
 }
 
 .testimonials-avatar {
@@ -123,9 +130,20 @@
 .testimonials-quote {
   color: #9a97ae;
   font-size: 13px;
-  line-height: 1.8;
+  line-height: 1.75;
   margin: 0;
-  text-align: justify;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.testimonials-quote::-webkit-scrollbar {
+  width: 6px;
+}
+
+.testimonials-quote::-webkit-scrollbar-thumb {
+  background: #d9a544;
+  border-radius: 3px;
 }
 
 .testimonials-dots {
@@ -150,8 +168,12 @@
 }
 
 @media (max-width: 600px) {
+  .testimonials-container {
+    padding: 0 16px;
+  }
   .testimonials-card {
     padding: 20px;
+    height: 380px;
   }
   .testimonials-title {
     font-size: 20px;
